@@ -52,10 +52,8 @@ android {
 
 
 dependencies {
-    implementation(files("libs/svgrenderer-release-1.0-SNAPSHOT.jar"))
 
-    //implementation(files("libs/svgrenderer-debug.aar"))
-   //implementation(project(":svgrenderer"))
+   implementation(project(":svgrenderer"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

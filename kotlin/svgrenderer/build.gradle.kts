@@ -66,6 +66,7 @@ tasks.register<Jar>("jarRelease") {
     archiveVersion.set("1.0-SNAPSHOT")
     destinationDirectory.set(layout.buildDirectory.dir("libs"))
 }
+apply(from = "publish-artifact.gradle")
 tasks.register("generatePom") {
     dependsOn("generatePomFileForAarPublication", "generatePomFileForJarReleasePublication")
 }

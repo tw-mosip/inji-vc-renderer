@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SVGRendererJar"
+rootProject.name = "SVGRenderer"
 include(":app")
 include(":svgrenderer")
