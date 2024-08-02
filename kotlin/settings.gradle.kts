@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SVGRenderer"
-include(":app")
-include(":svgrenderer")
+rootProject.name = "InjiVcRenderer"
+include(":example-app")
+include(":injivcrenderer")
