@@ -1,0 +1,16 @@
+publishing {
+    publications {
+        aar(MavenPublication) {
+            groupId = 'io.mosip' // Replace with your group ID
+            artifactId = 'injivcrenderer' // Replace with your artifact ID
+            version = '17.0.0' // Replace with your version
+
+            afterEvaluate {
+                artifact("$buildDir/outputs/aar/${project.getName()}-release.aar")
+            }
+        }
+    }
+    repositories {
+        mavenLocal() // This will publish to the local Maven repository
+    }
+}
