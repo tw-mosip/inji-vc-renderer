@@ -13,30 +13,25 @@ object DateUtils {
 
     private const val DATE_FORMAT = "yyyy-MM-dd"
 
+    // Method to format date
     fun formatDate(dateString: String): String {
-        val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
-        return try {
-            val date = dateFormat.parse(dateString)
-            val formattedDate = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
-            formattedDate.format(date)
-        } catch (e: Exception) {
-            "" // Handle parsing exception (e.g., invalid date format)
+        val date =
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).parse(dateString)
+        if (date != null) {
+            val formatter = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+            return formatter.format(date)
         }
+        return ""
     }
 
+    // Method to check if date is valid
     fun isValidDateTime(dateString: String): Boolean {
-        val dateFormat = SimpleDateFormat(DATE_FORMAT, Locale.getDefault())
-        dateFormat.isLenient = false // Strict parsing
-
         return try {
-            val date = dateFormat.parse(dateString)
-            // Validate year within a reasonable range (e.g., between 0 and 9999)
-            val calendar = Calendar.getInstance()
-            calendar.time = date
-            val year = calendar.get(Calendar.YEAR)
-            year >= 0 && year <= 9999
+            val date =
+                SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault()).parse(dateString)
+            date != null && date.year in 0..9999
         } catch (e: Exception) {
-            false // Return false if parsing fails or validation condition not met
+            false
         }
     }
 }

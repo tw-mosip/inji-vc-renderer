@@ -38,13 +38,20 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     val svgTemplate = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"250\" height=\"400\" viewBox=\"0 0 250 400\">\n" +
             "<text x=\"20\" y=\"60\" fill = \"#0000ff\" font-size=\"18\" font-weight=\"bold\">Hi {{user/name}}</text>\n" +
             "</svg>";
+    val sampleJson = """
+        {
+            "user": {
+                "name": "Jon Doe"
+            }
+        }
+    """.trimIndent()
     Column() {
         Text(
             text = "Hello $svgTemplate!",
             modifier = modifier
         )
         Button(onClick = {
-            val replacedTemplate = InjiVcRenderer().replaceSVGTemplatePlaceholders(svgTemplate, mapOf("user" to mapOf("name" to "John Doet")))
+            val replacedTemplate = InjiVcRenderer().replaceSVGTemplatePlaceholders(svgTemplate, sampleJson)
             System.out.print("---->$replacedTemplate")
         }) {
             Text(text = "Replace")
