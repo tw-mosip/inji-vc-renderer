@@ -13,6 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import io.mosip.injivcrenderer.ui.theme.InjiVcRendererJarTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,24 +38,39 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
 
-    val svgTemplate = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"250\" height=\"400\" viewBox=\"0 0 250 400\">\n" +
-            "<text x=\"20\" y=\"60\" fill = \"#0000ff\" font-size=\"18\" font-weight=\"bold\">Hi {{user/name}}</text>\n" +
-            "</svg>";
     val sampleJson = """
-        {
-            "user": {
-                "name": "Jon Doe"
-            }
-        }
+    {
+        "credentialSubject": {
+            "id": "",
+            "dob": "2000-01-26",
+            "email": "tgs@gmail.com",
+            "gender": "Male",
+            "mobile": "0123456789",
+            "fullName": "TGSStudio",
+            "policyName": "Sunbird Insurenc Policy",
+            "policyNumber": "55555",
+            "policyIssuedOn": "2023-04-20",
+            "policyExpiresOn": "2033-04-20"
+        },
+        "renderMethod" : [
+                {
+                  "id": "https://<local-host>/insurance_svg_template.svg",
+                  "type": "SvgRenderingTemplate",
+                  "name": "Portrait Mode"
+                }
+              ]
+    }
     """.trimIndent()
     Column() {
         Text(
-            text = "Hello $svgTemplate!",
+            text = "Hello World!",
             modifier = modifier
         )
         Button(onClick = {
-            val replacedTemplate = InjiVcRenderer().replaceSVGTemplatePlaceholders(svgTemplate, sampleJson)
-            System.out.print("Updated Template-->$replacedTemplate")
+            CoroutineScope(Dispatchers.Main).launch {
+                val replacedTemplate = InjiVcRenderer().replaceSVGTemplatePlaceholders(sampleJson)
+                System.out.print("Replaced Template-->$replacedTemplate")
+            }
         }) {
             Text(text = "Replace")
 

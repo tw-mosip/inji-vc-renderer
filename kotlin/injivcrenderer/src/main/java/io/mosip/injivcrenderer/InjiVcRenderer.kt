@@ -1,9 +1,13 @@
 package io.mosip.injivcrenderer
 import io.mosip.injivcrenderer.DateUtils.formatDate
 import io.mosip.injivcrenderer.DateUtils.isValidDateTime
+import io.mosip.injivcrenderer.NetworkHelper.fetchSvgAsText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okio.IOException
 import org.json.JSONObject
 
-class InjiVcRenderer: InjiVcRendererInterface {
+class InjiVcRenderer {
 
     // Method to get value from nested JSON data
     fun getValueFromData(key: String, data: JSONObject): Any? {
@@ -19,20 +23,31 @@ class InjiVcRenderer: InjiVcRendererInterface {
         return value
     }
 
+    // Method to replace placeholders in the SVG template
+    suspend fun replaceSVGTemplatePlaceholders(vcJsonData: String): String = withContext(Dispatchers.IO) {
+        try {
+            val jsonObject = JSONObject(vcJsonData)
+            val renderMethodArray = jsonObject.getJSONArray("renderMethod")
+            val firstRenderMethod = renderMethodArray.getJSONObject(0)
+            val svgUrl = firstRenderMethod.getString("id")
 
+            val svgTemplate = fetchSvgAsText(svgUrl)
 
-    // Method to replace placeholders in the template
-    override fun replaceSVGTemplatePlaceholders(svgTemplate: String, vcJsonData: String): String {
-        val jsonObject = JSONObject(vcJsonData)
-        val regex = Regex("\\{\\{(.*?)\\}\\}")
-        return regex.replace(svgTemplate) { match ->
-            val key = match.groups[1]?.value?.trim() ?: ""
-            val value = getValueFromData(key, jsonObject)
-            when {
-                value is String && isValidDateTime(value) -> formatDate(value)
-                value != null -> value.toString()
-                else -> ""
+            val regex = Regex("\\{\\{(.*?)\\}\\}")
+
+            // Replace placeholders in the SVG template
+            return@withContext regex.replace(svgTemplate) { match ->
+                val key = match.groups[1]?.value?.trim() ?: ""
+                val value = getValueFromData(key, jsonObject)
+                when {
+                    value is String && isValidDateTime(value) -> formatDate(value)
+                    value != null -> value.toString()
+                    else -> ""
+                }
             }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            throw e
         }
     }
 }
