@@ -52,7 +52,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         )
         Button(onClick = {
             val replacedTemplate = InjiVcRenderer().replaceSVGTemplatePlaceholders(svgTemplate, sampleJson)
-            System.out.print("---->$replacedTemplate")
+            System.out.print("Updated Template-->$replacedTemplate")
         }) {
             Text(text = "Replace")
 
