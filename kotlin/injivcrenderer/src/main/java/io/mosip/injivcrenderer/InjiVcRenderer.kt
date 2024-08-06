@@ -2,8 +2,6 @@ package io.mosip.injivcrenderer
 import io.mosip.injivcrenderer.DateUtils.formatDate
 import io.mosip.injivcrenderer.DateUtils.isValidDateTime
 import io.mosip.injivcrenderer.NetworkHelper.fetchSvgAsText
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okio.IOException
 import org.json.JSONObject
 
@@ -24,7 +22,7 @@ class InjiVcRenderer {
     }
 
     // Method to replace placeholders in the SVG template
-    suspend fun replaceSVGTemplatePlaceholders(vcJsonData: String): String = withContext(Dispatchers.IO) {
+    fun renderSvg(vcJsonData: String): String {
         try {
             val jsonObject = JSONObject(vcJsonData)
             val renderMethodArray = jsonObject.getJSONArray("renderMethod")
@@ -36,7 +34,7 @@ class InjiVcRenderer {
             val regex = Regex("\\{\\{(.*?)\\}\\}")
 
             // Replace placeholders in the SVG template
-            return@withContext regex.replace(svgTemplate) { match ->
+            return regex.replace(svgTemplate) { match ->
                 val key = match.groups[1]?.value?.trim() ?: ""
                 val value = getValueFromData(key, jsonObject)
                 when {

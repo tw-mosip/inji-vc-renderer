@@ -13,9 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import io.mosip.injivcrenderer.ui.theme.InjiVcRendererJarTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,10 +64,15 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             modifier = modifier
         )
         Button(onClick = {
-            CoroutineScope(Dispatchers.Main).launch {
-                val replacedTemplate = InjiVcRenderer().replaceSVGTemplatePlaceholders(sampleJson)
-                System.out.print("Replaced Template-->$replacedTemplate")
+            val thread = Thread {
+                try {
+                    val replacedTemplate = InjiVcRenderer().renderSvg(sampleJson)
+                    System.out.println("Replaced Template-->$replacedTemplate")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
+            thread.start()
         }) {
             Text(text = "Replace")
 

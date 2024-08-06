@@ -53,15 +53,6 @@ class InjiVcRendererTest {
         assertNull(result)
     }
 
-    @Test
-    fun testReplaceSVGTemplatePlaceholders_EmptyTemplate() {
-        val svgTemplate = ""
-        val jsonData = """{"user": {"name": "John"}}"""
-        val jsonObject = JSONObject(jsonData)
 
-        val result = renderer.replaceSVGTemplatePlaceholders(svgTemplate, jsonData)
-        assertEquals("", result)
-    }
-    
 
 }
