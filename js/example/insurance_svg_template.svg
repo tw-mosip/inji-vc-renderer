@@ -12,7 +12,7 @@
   <rect width="100%" height="100%" fill="url(#gradient)" rx="15" ry="15" />
   
   <!-- Main image clipped with rounded corners -->
-  <image id="main-image" width="100%" height="100%" href="https://34e6-2401-4900-1f2b-c22-c944-58cd-bfed-966c.ngrok-free.app/background.png" clip-path="url(#rounded-clip)" /> 
+  <image id="main-image" width="100%" height="100%" href="https://<svg-template-host-url>/background.png" clip-path="url(#rounded-clip)" />
   
     <!-- QR Code -->
   <image 
@@ -40,7 +40,7 @@ AAAAII1CAwAAAJBGoQEAAABIo9AAAAAApFFoAAAAANL8F7csoc8C012cAAAAAElFTkSuQmCC"
     y="70" 
     width="100" 
     height="100" 
-    xlink:href="https://83b8-2401-4900-1cd1-a419-6154-ee6-76a4-466.ngrok-free.app/profile_photo.png" 
+    xlink:href="https://<svg-template-host-url>/profile_photo.png"
     clip-path="url(#rounded-clip)" 
   />
   <text x="20" y="200" fill="#000000" font-size="16" font-weight="bold">{{credentialSubject/policyName}}</text>

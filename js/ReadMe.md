@@ -10,6 +10,8 @@
   -  update "id" field with url pointing to svg template over here [VCData.js](example%2FVCData.js)
 - To Modify the VC Data
   - update VC in [VCData.js](example%2FVCData.js)
+- Run below command to run the tests
+- > npm run test
 
 ### VC rendering Methods
 

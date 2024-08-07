@@ -1,7 +1,7 @@
 const {DateTimeUtils} = require("./DateTimeUtils");
 class VCRenderer {
     static renderSVG = async(data) => {
-
+        if(!data.renderMethod) return "";
         const templateUrl = data.renderMethod[0].id;
         const response = await fetch(templateUrl, {
             method: "GET",

@@ -2,7 +2,7 @@ publishing {
     repositories {
         maven {
             url = System.getenv("OSSRH_URL")
-            name = "injivcrenderer"
+            name = "inji-vcrenderer"
             credentials {
                 username = System.getenv("OSSRH_USER")
                 password = System.getenv("OSSRH_SECRET")
