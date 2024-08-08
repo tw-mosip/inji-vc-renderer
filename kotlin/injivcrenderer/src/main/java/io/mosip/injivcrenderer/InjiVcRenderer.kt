@@ -45,7 +45,7 @@ class InjiVcRenderer {
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            throw e
+            return ""
         }
     }
 }
