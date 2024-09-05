@@ -9,7 +9,7 @@ export class VCRenderer {
       return templateString.replace(/{{(.*?)}}/g, (match, key) => {
         key = key.replace(/^\//, '').replace(/\/$/, '');
         const keys = key.split('/');
-        let value = data; // Type as any for dynamic property access
+        let value = data;
         keys.forEach(k => {
           if (value) {
             value = value[k];
