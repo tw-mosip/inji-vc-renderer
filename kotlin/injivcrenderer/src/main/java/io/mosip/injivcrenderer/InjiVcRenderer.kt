@@ -3,23 +3,32 @@ import android.graphics.Bitmap
 import android.util.Base64
 import io.mosip.injivcrenderer.Utils.fetchSvgAsText
 import io.mosip.pixelpass.PixelPass
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 
 
 class InjiVcRenderer {
 
-    fun getValueFromData(key: String, data: JSONObject): Any? {
+    fun getValueFromData(key: String, jsonObject: JSONObject): Any? {
         val keys = key.split("/")
-        var value: Any? = data
+        var currentValue: Any? = jsonObject
+
         for (k in keys) {
-            if (value is JSONObject) {
-                value = value.opt(k)
-            } else {
-                return null
+            when (currentValue) {
+                is JSONObject -> currentValue = currentValue.opt(k)
+                is JSONArray -> {
+                    val index = k.toIntOrNull()
+                    currentValue = if (index != null && index < currentValue.length()) {
+                        currentValue.opt(index)
+                    } else {
+                        null
+                    }
+                }
+                else -> return null
             }
         }
-        return value
+        return currentValue
     }
 
     fun renderSvg(vcJsonData: String): String {
@@ -84,7 +93,7 @@ class InjiVcRenderer {
         const val BASE64_IMAGE_TYPE= "data:image/png;base64,"
         const val QR_CODE_PLACEHOLDER="{{qrCodeImage}}"
         const val BENEFITS_PLACEHOLDER = "{{credentialSubject/benefits}}"
-        const val PLACEHOLDER_REGEX_PATTERN = "\\{\\{(.*?)\\}\\}"
+        const val PLACEHOLDER_REGEX_PATTERN = "\\{\\{([^}]+)\\}\\}"
 
     }
 }
