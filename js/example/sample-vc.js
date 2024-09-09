@@ -17,6 +17,12 @@ const InsuranceVC = {
         "mobile": "0123456789",
         "benefits": [
             "Critical Surgery",
+            "Full body checkup",
+            "Critical Surgery",
+            "Full body checkup",
+            "Critical Surgery",
+            "Full body checkup",
+            "Critical Surgery",
             "Full body checkup"
         ],
         "fullName": "Swati",
@@ -49,7 +55,7 @@ const InsuranceVC = {
     ]
 }
 
-const MosipVC = {
+const MosipVCWithQR = {
     "@context": [
         "https://credentials/v1",
         "https:///.well-known/ida.json",
@@ -105,11 +111,74 @@ const MosipVC = {
     ],
     "renderMethod": [
         {
-            "id": "https://<svg-host-url>/assets/templates/national_id_template.svg",
+            "id": "https://<svg-host-url>/assets/templates/national_id_template_with_qr.svg",
             "type": "SvgRenderingTemplate",
             "name": "Portrait Mode"
         }
     ]
 }
 
-module.exports = {InsuranceVC, MosipVC};
+const MosipVCWithoutQR = {
+    "@context": [
+        "https://credentials/v1",
+        "https:///.well-known/ida.json",
+        {
+            "sec": "https://security#"
+        }
+    ],
+    "credentialSubject": {
+        "VID": "6532781704389407",
+        "face": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAkubSH5karW5/9k=",
+        "gender": [
+            {
+                "language": "eng",
+                "value": "MLE"
+            }
+        ],
+        "phone": "+++7765837077",
+        "city": [
+            {
+                "language": "eng",
+                "value": "TEST_CITYeng werwrewr wrwer werewr "
+            }
+        ],
+        "fullName": [
+            {
+                "language": "eng",
+                "value": "TEST_FULLNAMEeng"
+            }
+        ],
+        "addressLine1": [
+            {
+                "language": "eng",
+                "value": "TEST_ADDRESSLINE1eng"
+            }
+        ],
+        "dateOfBirth": "1992/04/15",
+        "id": "did:jwk:eyJrdHkiOiJSU0EiL",
+        "email": "mosipuser123@mailinator.com"
+    },
+    "id": "https://test.net/credentials/abcdefgh-a",
+    "issuanceDate": "2024-09-02T17:36:13.644Z",
+    "issuer": "https://test.netf/.well-known/controller.json",
+    "proof": {
+        "created": "2024-09-02T17:36:13Z",
+        "jws": "eyJiNj",
+        "proofPurpose": "assertionMethod",
+        "type": "RsaSignature2018",
+        "verificationMethod": "https://test/.well-known/public-key.json"
+    },
+    "type": [
+        "VerifiableCredential",
+        "TestVerifiableCredential"
+    ],
+    "renderMethod": [
+        {
+            "id": "https://<svg-host-url>/assets/templates/national_id_template_without_qr.svg",
+            "type": "SvgRenderingTemplate",
+            "name": "Portrait Mode"
+        }
+    ]
+}
+
+module.exports = {InsuranceVC, MosipVCWithQR, MosipVCWithoutQR};
