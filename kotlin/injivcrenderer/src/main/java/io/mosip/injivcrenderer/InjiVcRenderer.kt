@@ -39,9 +39,11 @@ class InjiVcRenderer {
             val svgUrl = firstRenderMethod.getString("id")
 
             var svgTemplate = fetchSvgAsText(svgUrl)
+            svgTemplate = replaceQRCode(vcJsonData, svgTemplate)
 
             svgTemplate = replaceBenefits(jsonObject, svgTemplate)
-            svgTemplate = replaceQRCode(vcJsonData, svgTemplate)
+            svgTemplate = replaceAddress(jsonObject, svgTemplate)
+
 
             val regex = Regex(PLACEHOLDER_REGEX_PATTERN)
             var result = regex.replace(svgTemplate) { match ->
@@ -81,8 +83,57 @@ class InjiVcRenderer {
             val benefitsArray = credentialSubject.getJSONArray("benefits")
             val benefitsString = (0 until benefitsArray.length())
                 .map { benefitsArray.getString(it) }
-                .joinToString(", ")
-            return svgTemplate.replace(BENEFITS_PLACEHOLDER, benefitsString);
+                .joinToString(",")
+            val benefitsPlaceholderList = listOf(BENEFITS_PLACEHOLDER_1, BENEFITS_PLACEHOLDER_2)
+            val replacedSvgWithBenefits = replaceMultiLinePlaceholders(svgTemplate, benefitsString, 55, benefitsPlaceholderList)
+
+            return replacedSvgWithBenefits
+        } catch (e: Exception){
+            e.printStackTrace()
+            return svgTemplate
+        }
+    }
+
+    private fun replaceAddress(jsonObject: JSONObject, svgTemplate: String): String {
+        try {
+            val credentialSubject = jsonObject.getJSONObject("credentialSubject")
+            val fields = listOf("addressLine1", "addressLine2", "addressLine3", "city", "province", "region", "postalCode")
+            val values = mutableListOf<String>()
+
+            for (field in fields) {
+                if (credentialSubject.has(field)) {
+                    val array = credentialSubject.getJSONArray(field)
+                    if (array.length() > 0) {
+                        val value = array.getJSONObject(0).optString("value", "").trim()
+                        if (value.isNotEmpty()) {
+                            values.add(value)
+                        }
+                    }
+                }
+            }
+            val fullAddress = values.joinToString(separator = ",")
+            val addressPlacholderList = listOf(FULL_ADDRESS_PLACEHOLDER_1, FULL_ADDRESS_PLACEHOLDER_2)
+            val replacedSvgWithFullAddress = replaceMultiLinePlaceholders(svgTemplate, fullAddress, 55, addressPlacholderList)
+            return replacedSvgWithFullAddress
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return svgTemplate
+        }
+    }
+
+    private fun replaceMultiLinePlaceholders(svgTemplate: String,
+                                             dataToSplit: String,
+                                             maxLength: Int,
+                                             placeholdersList: List<String>): String{
+        try {
+            val segments = dataToSplit.chunked(maxLength).take(2)
+            var replacedSvg = svgTemplate
+            placeholdersList.forEachIndexed { index, placeholder ->
+                if (index < segments.size) {
+                    replacedSvg = replacedSvg.replaceFirst(placeholder, segments[index])
+                }
+            }
+            return replacedSvg
         } catch (e: Exception){
             e.printStackTrace()
             return svgTemplate
@@ -92,7 +143,10 @@ class InjiVcRenderer {
     companion object{
         const val BASE64_IMAGE_TYPE= "data:image/png;base64,"
         const val QR_CODE_PLACEHOLDER="{{qrCodeImage}}"
-        const val BENEFITS_PLACEHOLDER = "{{credentialSubject/benefits}}"
+        const val FULL_ADDRESS_PLACEHOLDER_1="{{fullAddress1}}"
+        const val FULL_ADDRESS_PLACEHOLDER_2="{{fullAddress2}}"
+        const val BENEFITS_PLACEHOLDER_1 = "{{benefits1}}"
+        const val BENEFITS_PLACEHOLDER_2 = "{{benefits2}}"
         const val PLACEHOLDER_REGEX_PATTERN = "\\{\\{([^}]+)\\}\\}"
 
     }

@@ -109,7 +109,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         "issuer": "https://test.netf/.well-known/controller.json",
         "proof": {
             "created": "2024-09-02T17:36:13Z",
-            "jws": "eyJiNj"
+            "jws": "eyJiNj",
             "proofPurpose": "assertionMethod",
             "type": "RsaSignature2018",
             "verificationMethod": "https://test/.well-known/public-key.json"
