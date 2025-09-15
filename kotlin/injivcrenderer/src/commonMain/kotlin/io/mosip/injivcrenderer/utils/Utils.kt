@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.mosip.injivcrenderer.constants.Constants.DIGEST_MULTIBASE
 import io.mosip.injivcrenderer.networkManager.NetworkManager
 import io.mosip.injivcrenderer.constants.Constants.ID
+import io.mosip.injivcrenderer.constants.Constants.QR_CODE_FALLBACK_IMAGE_ID
+import io.mosip.injivcrenderer.constants.Constants.QR_CODE_IMAGE_ID
 import io.mosip.injivcrenderer.constants.Constants.QR_CODE_PLACEHOLDER
 import io.mosip.injivcrenderer.constants.Constants.QR_IMAGE_PREFIX
 import io.mosip.injivcrenderer.constants.Constants.RENDER_METHOD
@@ -64,14 +66,14 @@ class Utils(private val traceabilityId: String) {
                 null
             }
 
-            val finalQrBase64 = if (qrBase64.isNullOrEmpty()) {
-                DEFAULT_FALLBACK_QR_BASE64
-            } else {
-                qrBase64
-            }
-
+            val finalQrBase64 = qrBase64.takeUnless { it.isNullOrEmpty() } ?: DEFAULT_FALLBACK_QR_BASE64
             val qrImageTag = "$QR_IMAGE_PREFIX,$finalQrBase64"
-            svg.replace(QR_CODE_PLACEHOLDER, qrImageTag)
+
+            val imageId = if (qrBase64.isNullOrEmpty()) QR_CODE_FALLBACK_IMAGE_ID else QR_CODE_IMAGE_ID
+
+            return svg
+                .replace(QR_CODE_PLACEHOLDER, qrImageTag)
+                .replace(QR_CODE_IMAGE_ID, imageId)
         }
     }
 
