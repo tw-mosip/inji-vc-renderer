@@ -23,6 +23,7 @@ class InjiVcRenderer(private val traceabilityId: String) {
      * @param vcJsonString The Verifiable Credential as a JSON string.
      * @return A list of rendered SVG strings. Empty list if no valid render methods found or on error. Return is List<Any> to accommodate future extensions.
      */
+    @JvmOverloads
     fun renderVC(credentialFormat: CredentialFormat, wellKnownJson: String? = null, vcJsonString: String): List<Any> {
         return try {
 

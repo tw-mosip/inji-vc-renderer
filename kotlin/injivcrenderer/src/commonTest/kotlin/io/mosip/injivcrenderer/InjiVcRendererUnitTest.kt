@@ -1,5 +1,6 @@
 package io.mosip.injivcrenderer
 
+import io.mosip.injivcrenderer.constants.Constants.QR_CODE_FALLBACK_IMAGE_ID
 import io.mosip.injivcrenderer.constants.Constants.SVG_MUSTACHE
 import io.mosip.injivcrenderer.constants.Constants.TEMPLATE_RENDER_METHOD
 import io.mosip.injivcrenderer.constants.CredentialFormat
@@ -35,7 +36,7 @@ class InjiVcRendererTest {
                     url.contains("with-locale-object.svg") -> "<svg>Full Name - {{/credentialSubject/fullName/en}},முழுப் பெயர் - {{/credentialSubject/fullName/tam}}</svg>"
                     url.contains("with-locale-as-array-of-object.svg") -> "<svg>Full Name - {{/credentialSubject/fullName/0/value}},முழுப் பெயர் - {{/credentialSubject/fullName/1/value}}</svg>"
                     url.contains("nested-object.svg") -> "<svg>Address : {{/credentialSubject/addressLine1/0/value}}****{{/credentialSubject/region/0/value}}****{{/credentialSubject/city/0/value}}***</svg>"
-                    url.contains("qrcode.svg") -> "<svg>QR code : <image id = \"qrCodeImage\" xlink:href{{/qrCodeImage}}</svg>"
+                    url.contains("qrcode.svg") -> "<svg>QR code : <image id = \"qrCodeImage\" xlink:href={{/qrCodeImage}}</svg>"
                     url.contains("multilingual.svg") -> "<svg>" +
                             "{{/credential_definition/credentialSubject/fullName/display/0/name}}: {{/credentialSubject/fullName/0/value}}," +
                             "{{/credential_definition/credentialSubject/fullName/display/1/name}}: {{/credentialSubject/fullName/1/value}}" +
@@ -564,7 +565,7 @@ class InjiVcRendererTest {
               }"""
 
         val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
-        assertEquals(result.contains("{{qrCodeImage}}"), false)
+        assertEquals(result.contains("{{/qrCodeImage}}"), false)
 
     }
 
@@ -594,6 +595,7 @@ class InjiVcRendererTest {
                 result.contains("data:image/png;base64,${DEFAULT_FALLBACK_QR_BASE64}"),
                 "Expected fallback QR to be injected, but was:\n$result"
             )
+            assertTrue(result.contains(QR_CODE_FALLBACK_IMAGE_ID))
         }
     }
 
@@ -622,6 +624,7 @@ class InjiVcRendererTest {
                 result.contains("data:image/png;base64,${DEFAULT_FALLBACK_QR_BASE64}"),
                 "Expected fallback QR to be injected when qrBase64 is empty, but was:\n$result"
             )
+            assertTrue(result.contains(QR_CODE_FALLBACK_IMAGE_ID))
         }
     }
 
