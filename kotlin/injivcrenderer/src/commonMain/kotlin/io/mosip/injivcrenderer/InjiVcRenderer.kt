@@ -7,7 +7,11 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mosip.injivcrenderer.constants.CredentialFormat
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
+import io.mosip.injivcrenderer.pdf.PdfNetworkManager
+import io.mosip.injivcrenderer.pdf.extractPdfFields
+import io.mosip.injivcrenderer.pdf.fillPdfToBase64
 import io.mosip.injivcrenderer.utils.Utils
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 class InjiVcRenderer(private val traceabilityId: String) {
 
@@ -65,6 +69,31 @@ class InjiVcRenderer(private val traceabilityId: String) {
 
             }
             results
+        } catch (vcRendererException : VcRendererExceptions) {
+            throw vcRendererException
+        }
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    fun renderVCForPdf(vcJsonString: String): String {
+        return try {
+            var pdfBytes = PdfNetworkManager(traceabilityId).fetchPdfAsBytes("https://aad51d8abe3a.ngrok-free.app/templates/filler-new.pdf")
+            println(pdfBytes)
+            val values = mapOf(
+                "Text1" to "Mary Smith",
+                "Text2" to "Male",
+                "Text3" to "1990-01-01",
+                "Text4" to "Gomti Nagar",
+                "Text5" to "Lucknow",
+                "Text6" to "Uttar Pradesh"
+            )
+
+            val fieldNames = extractPdfFields(pdfBytes)
+            println(fieldNames)
+
+            // Returns Base64 string of filled PDF
+            val result = fillPdfToBase64(pdfBytes, values)
+            return result
         } catch (vcRendererException : VcRendererExceptions) {
             throw vcRendererException
         }

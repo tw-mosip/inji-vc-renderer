@@ -48,11 +48,13 @@ kotlin {
         val jvmMain by getting{
             dependencies {
                 implementation(libs.pixelpass.jar)
+                implementation("org.apache.pdfbox:pdfbox:2.0.30")
             }
         }
         val androidMain by getting {
             dependencies {
                 implementation(libs.pixelpass.aar)
+                implementation("com.tom-roush:pdfbox-android:2.0.27.0")
             }
         }
         val jvmTest by getting

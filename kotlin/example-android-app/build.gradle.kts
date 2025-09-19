@@ -53,7 +53,12 @@ android {
 
 dependencies {
 
-   implementation(project(":injivcrenderer"))
+    implementation(project(":injivcrenderer")) {
+        exclude(group = "commons-logging", module = "commons-logging")
+        exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
+    }
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

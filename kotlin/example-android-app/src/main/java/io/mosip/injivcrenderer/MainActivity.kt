@@ -19,6 +19,7 @@ import io.mosip.injivcrenderer.ui.theme.InjiVcRendererJarTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import io.mosip.injivcrenderer.constants.CredentialFormat
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        PDFBoxResourceLoader.init(applicationContext)
 
         setContent {
             InjiVcRendererJarTheme {
@@ -133,8 +135,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             scope.launch {
                 try {
                     val replacedTemplate = withContext(Dispatchers.IO) {
-                        InjiVcRenderer("sample-app-trace-id").renderVC(
-                            credentialFormat = CredentialFormat.LDP_VC,
+                        InjiVcRenderer("sample-app-trace-id").renderVCForPdf(
                             vcJsonString = farmerVc)
                     }
                     println("Replaced Template: $replacedTemplate")
