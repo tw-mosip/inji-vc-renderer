@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mosip.injivcrenderer.constants.CredentialFormat
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
+import io.mosip.injivcrenderer.templateEngine.pdf.svgListToPdfBase64
 import io.mosip.injivcrenderer.utils.Utils
 
 class InjiVcRenderer(private val traceabilityId: String) {
@@ -24,7 +25,11 @@ class InjiVcRenderer(private val traceabilityId: String) {
      * @return A list of rendered SVG strings. Empty list if no valid render methods found or on error. Return is List<Any> to accommodate future extensions.
      */
     @JvmOverloads
-    fun renderVC(credentialFormat: CredentialFormat, wellKnownJson: String? = null, vcJsonString: String): List<Any> {
+    fun renderVC(
+        credentialFormat: CredentialFormat,
+        wellKnownJson: String? = null,
+        vcJsonString: String
+    ): List<Any> {
         return try {
 
             if (credentialFormat != CredentialFormat.LDP_VC) {
@@ -39,37 +44,53 @@ class InjiVcRenderer(private val traceabilityId: String) {
 
             val results = mutableListOf<String>()
             for (element in renderMethodArray) {
+                val templateResponse = Utils(traceabilityId).extractSvgTemplate(element, vcJsonString)
 
-                var svgTemplate = Utils(traceabilityId).extractSvgTemplate(element, vcJsonString)
-
-                // Replace label placeholders first using well-known JSON
-                if(!wellKnownJson.isNullOrEmpty()) {
-                    wellKnownJsonNode = mapper.readTree(wellKnownJson)
-
+                val svgList = if(templateResponse.isXmlWithPageSet()){
+                    Utils(traceabilityId).getSvgListFromPageSet(templateResponse.body, traceabilityId)
+                } else {
+                    listOf(templateResponse.body)
                 }
-                svgTemplate = JsonPointerResolver(traceabilityId).replacePlaceholders(
-                    svgTemplate = svgTemplate,
-                    jsonNode = wellKnownJsonNode,
-                    isLabelPlaceholder = true
-                )
 
-                // Replace value placeholders using VC JSON
-                val renderProperties =
-                    element.path(TEMPLATE).path(RENDER_PROPERTY).takeIf { it.isArray }?.map { it.asText() }
+                val renderedList = svgList.map { svg ->
+                    var processedSvg = svg
 
-                val renderedSvg = JsonPointerResolver(traceabilityId).replacePlaceholders(
-                    svgTemplate = svgTemplate,
-                    jsonNode = vcJsonNode,
-                    renderProperties = renderProperties)
-                results.add(renderedSvg)
+                    // Replace label placeholders first using well-known JSON
+                    if (!wellKnownJson.isNullOrEmpty()) {
+                        wellKnownJsonNode = mapper.readTree(wellKnownJson)
+                        }
+                        processedSvg = JsonPointerResolver(traceabilityId).replacePlaceholders(
+                            svgTemplate = processedSvg,
+                            jsonNode = wellKnownJsonNode,
+                            isLabelPlaceholder = true
+                        )
 
+                    val renderProperties =
+                        element.path(TEMPLATE).path(RENDER_PROPERTY)
+                            .takeIf { it.isArray }
+                            ?.map { it.asText() }
+
+                    // Replace value placeholders using VC JSON
+                    JsonPointerResolver(traceabilityId).replacePlaceholders(
+                        svgTemplate = processedSvg,
+                        jsonNode = vcJsonNode,
+                        renderProperties = renderProperties
+                    )
+                }
+
+                results.addAll(renderedList)
             }
-            results
-        } catch (vcRendererException : VcRendererExceptions) {
+
+            return results
+        } catch (vcRendererException: VcRendererExceptions) {
             throw vcRendererException
         }
     }
 
+    fun convertToPdf(svgList: List<String>): String {
+        val result = svgListToPdfBase64(svgList)
+        return result
+    }
 
 
 }

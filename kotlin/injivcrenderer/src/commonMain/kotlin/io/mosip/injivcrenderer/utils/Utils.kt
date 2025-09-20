@@ -16,15 +16,25 @@ import io.mosip.injivcrenderer.constants.Constants.TEMPLATE
 import io.mosip.injivcrenderer.constants.Constants.TEMPLATE_RENDER_METHOD
 import io.mosip.injivcrenderer.constants.Constants.TYPE
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
+import io.mosip.injivcrenderer.extensions.getElementsByTagNameIgnoreCase
+import io.mosip.injivcrenderer.networkManager.TemplateResponse
 import io.mosip.injivcrenderer.qrCode.QrCodeGenerator
+import org.w3c.dom.Element
+import java.io.ByteArrayInputStream
+import java.io.StringWriter
 import java.security.MessageDigest
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 class Utils(private val traceabilityId: String) {
     private val className = Utils::class.simpleName
 
-    fun extractSvgTemplate(renderMethod: JsonNode, vcJsonString: String): String {
+    fun extractSvgTemplate(renderMethod: JsonNode, vcJsonString: String): TemplateResponse {
         if (!isSvgMustacheRenderSuite(renderMethod)) {
             throw VcRendererExceptions.InvalidRenderSuiteException(traceabilityId, className)
         }
@@ -39,7 +49,8 @@ class Utils(private val traceabilityId: String) {
             ?: throw VcRendererExceptions.MissingTemplateIdException(traceabilityId, className)
         val digestMultibase = templateValue.path(DIGEST_MULTIBASE).asText(null)
 
-        var rawSvg = NetworkManager(traceabilityId).fetchSvgAsText(templateId)
+        var templateResponse = NetworkManager(traceabilityId).fetch(templateId)
+        var rawSvg = templateResponse.body
         if (digestMultibase != null && !validateDigestMultibase(rawSvg, digestMultibase)) {
             throw VcRendererExceptions.MultibaseValidationException(
                 traceabilityId = traceabilityId,
@@ -51,7 +62,8 @@ class Utils(private val traceabilityId: String) {
 
         rawSvg = injectQrCodeIfNeeded(rawSvg, vcJsonString)
 
-        return rawSvg
+        return TemplateResponse(contentType = templateResponse.contentType, rawSvg)
+
     }
 
     /** Inject QR code placeholder if present in the SVG */
@@ -142,6 +154,56 @@ class Utils(private val traceabilityId: String) {
             .replace('_', '/')
             .padEnd(input.length + (4 - input.length % 4) % 4, '=')
         return Base64.decode(standardBase64)
+    }
+
+    fun getSvgListFromPageSet(xml: String, traceabilityId: String): List<String> {
+        try {
+            val svgList = mutableListOf<String>()
+
+            val factory = DocumentBuilderFactory.newInstance()
+            factory.isNamespaceAware = true
+            val builder = factory.newDocumentBuilder()
+            val document = builder.parse(ByteArrayInputStream(xml.toByteArray(Charsets.UTF_8)))
+
+            val pageSetNodes = document.getElementsByTagNameIgnoreCase("Pageset")
+            if (pageSetNodes.length == 0) {
+                throw VcRendererExceptions.PageSetParsingException(
+                    traceabilityId = traceabilityId,
+                    className = this::class.simpleName,
+                    exceptionMessage = "No <Pageset> element found in the xml document"
+                )
+            }
+
+            val pages = document.getElementsByTagNameIgnoreCase("Page")
+            if (pages.length == 0) {
+                throw VcRendererExceptions.PageSetParsingException(
+                    traceabilityId = traceabilityId,
+                    className = this::class.simpleName,
+                    exceptionMessage = "No <Page> elements found in the Pageset"
+                )
+            }
+
+            for (i in 0 until pages.length) {
+                val page = pages.item(i) as Element
+                val svgNode = page.getElementsByTagNameIgnoreCase("svg").item(0) ?: continue
+
+                val transformer = TransformerFactory.newInstance().newTransformer()
+                transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
+                transformer.setOutputProperty(OutputKeys.INDENT, "no")
+
+                val writer = StringWriter()
+                transformer.transform(DOMSource(svgNode), StreamResult(writer))
+                svgList.add(writer.toString())
+            }
+
+            return svgList
+        } catch (e: Exception) {
+            throw VcRendererExceptions.PageSetParsingException(
+                traceabilityId = traceabilityId,
+                className = this::class.simpleName,
+                exceptionMessage = e.message ?: "Error parsing PageSet XML"
+            )
+        }
     }
 
 

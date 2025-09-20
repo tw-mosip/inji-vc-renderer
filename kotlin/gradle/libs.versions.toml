@@ -1,5 +1,8 @@
 [versions]
 agp = "8.2.2"
+androidsvgAar = "1.4"
+batikTranscoder = "1.19"
+fop = "2.11"
 kotlin = "2.0.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
@@ -12,6 +15,7 @@ composeBom = "2024.04.01"
 mockito = "4.8.1"
 mockitoKotlin = "5.0.0"
 okhttp= "4.10.0"
+pdfboxAndroid = "2.0.27.0"
 pixelpass="0.7.0"
 junitJupiter = "5.8.1"
 robolectric = "4.8.1"
@@ -22,7 +26,10 @@ sonarqube = "5.1.0.4872"
 jackson-version = "2.14.0"
 
 [libraries]
+androidsvg-aar = { module = "com.caverock:androidsvg-aar", version.ref = "androidsvgAar" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+batik-transcoder = { module = "org.apache.xmlgraphics:batik-transcoder", version.ref = "batikTranscoder" }
+fop = { module = "org.apache.xmlgraphics:fop", version.ref = "fop" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -40,6 +47,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 mockito-core = { group = "org.mockito", name="mockito-core", version.ref= "mockito"}
 mockito-inline = { group = "org.mockito", name="mockito-inline", version.ref= "mockito"}
 mockito-kotlin = { group = "org.mockito.kotlin", name="mockito-kotlin", version.ref= "mockitoKotlin"}
+pdfbox-android = { module = "com.tom-roush:pdfbox-android", version.ref = "pdfboxAndroid" }
 squareup-okhttp= { group = "com.squareup.okhttp3", name="okhttp", version.ref= "okhttp"}
 pixelpass-jar= { group = "io.mosip", name="pixelpass-jar", version.ref= "pixelpass"}
 pixelpass-aar= { group = "io.mosip", name="pixelpass-aar", version.ref= "pixelpass"}

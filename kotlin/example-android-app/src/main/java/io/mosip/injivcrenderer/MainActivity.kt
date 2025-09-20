@@ -19,6 +19,7 @@ import io.mosip.injivcrenderer.ui.theme.InjiVcRendererJarTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.unit.dp
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import io.mosip.injivcrenderer.constants.CredentialFormat
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,7 @@ import kotlinx.coroutines.withContext
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        PDFBoxResourceLoader.init(applicationContext)
 
         setContent {
             InjiVcRendererJarTheme {
@@ -54,9 +56,8 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
           "renderMethod": [
                  {
                    "template": {
-                     "digestMultibase": "zB7zqWmE5vGRmAfD39XPWsFo6hvPyrk8QJTtaRqrbjM6t",
                      "mediaType": "image/svg+xml",
-                     "id": "https://<host-url>/templates/farmer-with-face-rfc-compliance.svg"
+                     "id": "https://<svg-host>/templates/farmer-pageset.xml"
                    },
                    "renderSuite": "svg-mustache",
                    "type": "TemplateRenderMethod"
@@ -124,24 +125,21 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     """.trimIndent()
 
     val scope = rememberCoroutineScope()
+    var svgList by remember { mutableStateOf<List<String>>(emptyList()) }
 
 
     Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Hello World!", modifier = modifier)
 
         Button(onClick = {
             scope.launch {
                 try {
-                    val replacedTemplate = withContext(Dispatchers.IO) {
+                    val renderedSvgList = withContext(Dispatchers.IO) {
                         InjiVcRenderer("sample-app-trace-id").renderVC(
                             credentialFormat = CredentialFormat.LDP_VC,
                             vcJsonString = farmerVc)
                     }
-                    println("Replaced Template: $replacedTemplate")
-
-                    if (replacedTemplate.isNotEmpty()) {
-                        svgString = replacedTemplate[0]
-                    }
+                    svgList = renderedSvgList as List<String>
+                    println("SVG List: $svgList")
 
                 } catch (e: Exception) {
                     if(e is VcRendererExceptions) {
@@ -152,7 +150,33 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
                 }
             }
         }) {
-            Text(text = "Famrer Vc")
+            Text(text = "Render SVG")
+        }
+
+        Button(onClick = {
+            scope.launch {
+                try {
+                    if (svgList.isEmpty()) {
+                        println("No SVGs available. Render first!")
+                        return@launch
+                    }
+                    val convertedPdfB64Bytes = withContext(Dispatchers.IO) {
+                        InjiVcRenderer("sample-app-trace-id").convertToPdf(
+                            svgList
+                        )
+                    }
+                    println(convertedPdfB64Bytes)
+
+                } catch (e: Exception) {
+                    if(e is VcRendererExceptions) {
+                        println("VC Rendering error: ${e.errorCode} - ${e.message}")
+                    } else {
+                        println("Unexpected error: ${e.message}")
+                    }
+                }
+            }
+        }) {
+            Text(text = "SVG to PDF")
         }
 
         Spacer(modifier = Modifier.height(16.dp))

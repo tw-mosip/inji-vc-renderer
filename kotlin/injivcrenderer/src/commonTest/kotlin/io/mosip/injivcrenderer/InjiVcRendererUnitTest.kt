@@ -3,10 +3,12 @@ package io.mosip.injivcrenderer
 import io.mosip.injivcrenderer.constants.Constants.QR_CODE_FALLBACK_IMAGE_ID
 import io.mosip.injivcrenderer.constants.Constants.SVG_MUSTACHE
 import io.mosip.injivcrenderer.constants.Constants.TEMPLATE_RENDER_METHOD
+import io.mosip.injivcrenderer.constants.ContentType
 import io.mosip.injivcrenderer.constants.CredentialFormat
 import io.mosip.injivcrenderer.constants.VcRendererErrorCodes
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 import io.mosip.injivcrenderer.networkManager.NetworkManager
+import io.mosip.injivcrenderer.networkManager.TemplateResponse
 import io.mosip.injivcrenderer.qrCode.QrCodeGenerator
 import io.mosip.injivcrenderer.utils.Utils.Companion.DEFAULT_FALLBACK_QR_BASE64
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -28,21 +30,22 @@ class InjiVcRendererTest {
     @BeforeTest
     fun setup() {
         mockConstruction = mockConstruction(NetworkManager::class.java) { mock, _ ->
-            whenever(mock.fetchSvgAsText(any())).thenAnswer { invocation ->
+            whenever(mock.fetch(any())).thenAnswer { invocation ->
                 val url = invocation.arguments[0] as String
                 when {
-                    url.contains("normal.svg") -> "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>"
-                    url.contains("arrays.svg") -> "<svg>Benefits: {{/credentialSubject/benefits/0}}, {{/credentialSubject/benefits/1}}</svg>"
-                    url.contains("with-locale-object.svg") -> "<svg>Full Name - {{/credentialSubject/fullName/en}},முழுப் பெயர் - {{/credentialSubject/fullName/tam}}</svg>"
-                    url.contains("with-locale-as-array-of-object.svg") -> "<svg>Full Name - {{/credentialSubject/fullName/0/value}},முழுப் பெயர் - {{/credentialSubject/fullName/1/value}}</svg>"
-                    url.contains("nested-object.svg") -> "<svg>Address : {{/credentialSubject/addressLine1/0/value}}****{{/credentialSubject/region/0/value}}****{{/credentialSubject/city/0/value}}***</svg>"
-                    url.contains("qrcode.svg") -> "<svg>QR code : <image id = \"qrCodeImage\" xlink:href={{/qrCodeImage}}</svg>"
-                    url.contains("multilingual.svg") -> "<svg>" +
+                    url.contains("normal.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
+                    url.contains("arrays.svg") -> TemplateResponse(ContentType.SVG, "<svg>Benefits: {{/credentialSubject/benefits/0}}, {{/credentialSubject/benefits/1}}</svg>")
+                    url.contains("with-locale-object.svg") -> TemplateResponse(ContentType.SVG, "<svg>Full Name - {{/credentialSubject/fullName/en}},முழுப் பெயர் - {{/credentialSubject/fullName/tam}}</svg>")
+                    url.contains("with-locale-as-array-of-object.svg") -> TemplateResponse(ContentType.SVG, "<svg>Full Name - {{/credentialSubject/fullName/0/value}},முழுப் பெயர் - {{/credentialSubject/fullName/1/value}}</svg>")
+                    url.contains("nested-object.svg") -> TemplateResponse(ContentType.SVG, "<svg>Address : {{/credentialSubject/addressLine1/0/value}}****{{/credentialSubject/region/0/value}}****{{/credentialSubject/city/0/value}}***</svg>")
+                    url.contains("qrcode.svg") -> TemplateResponse(ContentType.SVG, "<svg>QR code : <image id = \"qrCodeImage\" xlink:href={{/qrCodeImage}}</svg>")
+                    url.contains("multilingual.svg") -> TemplateResponse(ContentType.SVG, "<svg>" +
                             "{{/credential_definition/credentialSubject/fullName/display/0/name}}: {{/credentialSubject/fullName/0/value}}," +
                             "{{/credential_definition/credentialSubject/fullName/display/1/name}}: {{/credentialSubject/fullName/1/value}}" +
-                            "</svg>"
-                    url.contains("test-digest.svg") -> "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>"
-                    else -> "<svg>default</svg>"
+                            "</svg>")
+                    url.contains("test-digest.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
+                    url.contains("pageset-.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
+                    else -> TemplateResponse(ContentType.SVG, "<svg>default</svg>")
                 }
             }
         }
