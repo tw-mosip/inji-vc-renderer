@@ -7,7 +7,7 @@ import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.INVALID_RENDER_MET
 import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.INVALID_RENDER_SUITE
 import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.MISSING_TEMPLATE_ID
 import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.MULTIBASE_VALIDATION_FAILED
-import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.PAGE_SET_PARSING_FAILED
+import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.XML_PARSING_FAILED
 import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.QR_CODE_GENERATION_FAILURE
 import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.SVG_FETCH_ERROR
 import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.UNSUPPORTED_CREDENTIAL_FORMAT
@@ -59,6 +59,6 @@ sealed class VcRendererExceptions(
 
     class PageSetParsingException(traceabilityId: String, className: String?, exceptionMessage: String) :
         VcRendererExceptions(
-            PAGE_SET_PARSING_FAILED, "Error while parsing the Pageset XML: $exceptionMessage", className.orEmpty(), traceabilityId)
+            XML_PARSING_FAILED, "Error while parsing the Pageset XML: $exceptionMessage", className.orEmpty(), traceabilityId)
 
 }

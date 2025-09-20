@@ -44,7 +44,21 @@ class InjiVcRendererTest {
                             "{{/credential_definition/credentialSubject/fullName/display/1/name}}: {{/credentialSubject/fullName/1/value}}" +
                             "</svg>")
                     url.contains("test-digest.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
-                    url.contains("pageset-.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
+                    url.contains("xml-invalid-missing-pageset.xml") -> TemplateResponse(ContentType.XML, "<Pageset-Invalid></Pageset-Invalid>")
+                    url.contains("xml-invalid-missing-pages.xml") -> TemplateResponse(ContentType.XML, "<Pageset></Pageset>")
+                    url.contains("xml-invalid-missing-pages.xml") -> TemplateResponse(ContentType.XML,  "<Pageset>" +
+                            "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
+                            "</Pageset>")
+                    url.contains("xml-valid-with-2-pages.xml") -> TemplateResponse(ContentType.XML, "<Pageset>" +
+                            "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
+                            "<Page><svg>Mobile: {{/credentialSubject/mobile}}</svg></Page>" +
+                            "</Pageset>")
+                    url.contains("xml-valid-with-1-page.xml") -> TemplateResponse(ContentType.XML,  "<Pageset>" +
+                            "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
+                            "</Pageset>")
+                    url.contains("xml-invalid-missing-svg.xml") -> TemplateResponse(ContentType.XML,  "<Pageset>" +
+                            "<Page>Email: {{/credentialSubject/email}}</Page>" +
+                            "</Pageset>")
                     else -> TemplateResponse(ContentType.SVG, "<svg>default</svg>")
                 }
             }
@@ -720,8 +734,129 @@ class InjiVcRendererTest {
 
     }
 
+    @Test
+    fun `test valid xml - with 2 pages`() {
+        val vcJsonString = """{
+            "credentialSubject": {
+                "email": "test@test.com",
+                "mobile": "1234567890"
+            },
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-valid-with-2-pages.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        "<Pageset>" +
+                "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
+                "<Page><svg>Mobile: {{/credentialSubject/mobile}}</svg></Page>" +
+                "</Pageset>"
+        assertEquals(
+            listOf(
+                "<svg>Email: test@test.com</svg>", "<svg>Mobile: 1234567890</svg>"), result)
 
+    }
 
+    @Test
+    fun `test valid xml - with 1 page`() {
+        val vcJsonString = """{
+            "credentialSubject": {
+                "email": "test@test.com",
+                "mobile": "1234567890"
+            },
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-valid-with-1-page.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        "<Pageset>" +
+                "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
+                "</Pageset>"
+        assertEquals(
+            listOf(
+                "<svg>Email: test@test.com</svg>"), result)
+
+    }
+
+    @Test
+    fun `test invalid xml - missing pageset`() {
+        val vcJsonString = """{
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-invalid-missing-pageset.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+
+        val actualException =
+            assertFailsWith<VcRendererExceptions.PageSetParsingException> {
+                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+            }
+        assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
+        assertTrue(actualException.message!!.contains("Root element must be <Pageset>"))
+
+    }
+
+    @Test
+    fun `test invalid xml - missing page`() {
+        val vcJsonString = """{
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-invalid-missing-pages.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+
+        val actualException =
+            assertFailsWith<VcRendererExceptions.PageSetParsingException> {
+                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+            }
+        assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
+        assertTrue(actualException.message!!.contains("<Pageset> must contain at least one <Page>"))
+
+    }
+
+    @Test
+    fun `test invalid xml - missing svg`() {
+        val vcJsonString = """{
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-invalid-missing-svg.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+
+        val actualException =
+            assertFailsWith<VcRendererExceptions.PageSetParsingException> {
+                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+            }
+        assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
+        assertTrue(actualException.message!!.contains("does not contain a <svg> element"))
+
+    }
 
 }
 

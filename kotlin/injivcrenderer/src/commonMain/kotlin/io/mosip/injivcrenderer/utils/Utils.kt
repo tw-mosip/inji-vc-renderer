@@ -165,27 +165,37 @@ class Utils(private val traceabilityId: String) {
             val builder = factory.newDocumentBuilder()
             val document = builder.parse(ByteArrayInputStream(xml.toByteArray(Charsets.UTF_8)))
 
-            val pageSetNodes = document.getElementsByTagNameIgnoreCase("Pageset")
-            if (pageSetNodes.length == 0) {
+            val root = document.documentElement
+            if (!root.nodeName.equals("Pageset", ignoreCase = true)) {
                 throw VcRendererExceptions.PageSetParsingException(
-                    traceabilityId = traceabilityId,
-                    className = this::class.simpleName,
-                    exceptionMessage = "No <Pageset> element found in the xml document"
+                    traceabilityId,
+                    this::class.simpleName,
+                    "Root element must be <Pageset>"
                 )
             }
 
             val pages = document.getElementsByTagNameIgnoreCase("Page")
             if (pages.length == 0) {
                 throw VcRendererExceptions.PageSetParsingException(
-                    traceabilityId = traceabilityId,
-                    className = this::class.simpleName,
-                    exceptionMessage = "No <Page> elements found in the Pageset"
+                    traceabilityId,
+                    this::class.simpleName,
+                    "<Pageset> must contain at least one <Page>"
                 )
             }
 
             for (i in 0 until pages.length) {
                 val page = pages.item(i) as Element
-                val svgNode = page.getElementsByTagNameIgnoreCase("svg").item(0) ?: continue
+                val svgNodes = page.getElementsByTagNameIgnoreCase("svg")
+
+                if (svgNodes.length == 0) {
+                    throw VcRendererExceptions.PageSetParsingException(
+                        traceabilityId,
+                        this::class.simpleName,
+                        "<Page> at index $i does not contain a <svg> element"
+                    )
+                }
+
+                val svgNode = svgNodes.item(0)
 
                 val transformer = TransformerFactory.newInstance().newTransformer()
                 transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")

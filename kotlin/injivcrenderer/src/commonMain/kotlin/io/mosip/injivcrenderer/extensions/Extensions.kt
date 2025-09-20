@@ -1,6 +1,5 @@
 package io.mosip.injivcrenderer.extensions
 
-import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.w3c.dom.Node
@@ -23,20 +22,5 @@ fun Node.getElementsByTagNameIgnoreCase(tagName: String): NodeList {
     return object : NodeList {
         override fun getLength(): Int = filtered.size
         override fun item(index: Int): Node? = filtered.getOrNull(index)
-    }
-}
-
-fun Document.validatePageset(traceabilityId: String, className: String) {
-    val pageSetNodes = this.getElementsByTagNameIgnoreCase("Pageset")
-    if (pageSetNodes.length == 0) {
-        throw VcRendererExceptions.PageSetParsingException(traceabilityId, className)
-    }
-
-    for (i in 0 until pageSetNodes.length) {
-        val pageSet = pageSetNodes.item(i) as? Element ?: continue
-        val pages = pageSet.getElementsByTagNameIgnoreCase("Page")
-        if (pages.length == 0) {
-            throw VcRendererExceptions.MissingPageElement(traceabilityId, className)
-        }
     }
 }
