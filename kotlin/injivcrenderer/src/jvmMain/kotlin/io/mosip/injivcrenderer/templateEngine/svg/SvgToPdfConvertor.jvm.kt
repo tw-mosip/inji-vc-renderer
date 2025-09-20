@@ -1,4 +1,4 @@
-package io.mosip.injivcrenderer.templateEngine.pdf
+package io.mosip.injivcrenderer.templateEngine.svg
 import org.apache.fop.svg.PDFTranscoder
 import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput

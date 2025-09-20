@@ -10,7 +10,7 @@ import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 import io.mosip.injivcrenderer.networkManager.NetworkManager
 import io.mosip.injivcrenderer.networkManager.TemplateResponse
 import io.mosip.injivcrenderer.qrCode.QrCodeGenerator
-import io.mosip.injivcrenderer.utils.Utils.Companion.DEFAULT_FALLBACK_QR_BASE64
+import io.mosip.injivcrenderer.qrCode.QrCodeGenerator.Companion.DEFAULT_FALLBACK_QR_BASE64
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockConstruction

@@ -161,7 +161,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
                         return@launch
                     }
                     val convertedPdfB64Bytes = withContext(Dispatchers.IO) {
-                        InjiVcRenderer("sample-app-trace-id").convertToPdf(
+                        InjiVcRenderer("sample-app-trace-id").convertSvgToPdf(
                             svgList
                         )
                     }

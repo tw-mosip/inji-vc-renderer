@@ -1,4 +1,4 @@
-package io.mosip.injivcrenderer.templateEngine.pdf
+package io.mosip.injivcrenderer.templateEngine.svg
 
 
 import android.graphics.Canvas
