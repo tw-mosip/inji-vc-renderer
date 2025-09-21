@@ -54,6 +54,9 @@
 ```
 - Returns the Replaced svg template to render proper SVG Image. It list of SVG Template if multiple render methods are present in the VC.
 
+- `convertSvgToPdf(svgList: List<String>): String` - expects the list of SVG Templates as input and returns the PDF in base64 format.
+    - `svgList` - List of SVG Templates to be converted to each pages in PDF.
+
 
 ## Package Structure
 ```
@@ -61,21 +64,28 @@ io.mosip.injivcrenderer/commonMain
 ├── InjiVcRenderer.kt                  # Main library class with public API
 ├── constants/         # Constants used across the library
 │   ├── Constants.kt   
-│   ├── NetworkConstants.kt      
+│   ├── ContentType.kt      
+│   ├── CredentialFormat.kt   
 │   └── VcRendererErrorCodes.kt #Error codes used for Custom Exceptions              
-│   |
 ├── exceptions/        # Exceptions
 │   ├── VcRendererExceptions.kt  # Centralized exception definitions
-│   │
+├── extensions/  
+│   └── Extensions.kt #Kotlin extension functions 
+├── networkManager/         
+│   ├── NetworkManager.kt   #Network related utilities  
+│   └── TemplateResponse.kt # data class for template download response
 │── qrCode/          
-│   │   ├── QRCodeGenerator.kt  # QR code generation utility
-│   │   └── QrDataConvertor.kt # Implementation of QR code generation
-│── templateEngine/svg/        # Json Pointer Algorithm implementation
-    |--JsonPointerResolver.kt    
-├── utils      # Utility classes
-|    ├── Utils.kt               # SVG related utilities
-├── networkManager     
-    ├── NetworkManager.kt               # Network related utilities
+│   ├── QRCodeGenerator.kt  # QR code generation utility
+│   └── QrDataConvertor.kt # Implementation of QR code generation
+│── templateEngine/svg//          
+│   ├── JsonPointerResolver.kt  # Json Pointer Algorithm implementation
+│   └── SvgToPdfConvertor.kt # SVg to Pdf conversion utility   
+│── utils/ - # Helpers and utility classes        
+│   ├── DigestMutlibaseHelper.kt  
+│   ├── PlaceholderRepalcementHelper.kt  
+│   ├── RenderMethodHelper.kt  
+│   ├── TemplateHelper.kt  
+│   └── XMLHelper.kt    
 ```
 
 ###### Exceptions
@@ -86,6 +96,9 @@ io.mosip.injivcrenderer/commonMain
 4. MissingTemplateIdException is thrown if template id is missing in render method
 5. SvgFetchException is thrown if fetching SVG from the URL fails
 6. InvalidRenderMethodException is thrown if render method object is invalid
+7. MultibaseValidationException is thrown if digestMultibase validation fails
+8. PageSetParsingException is thrown if parsing pageSet fails in Svg to Pdf conversion
+9. UnsupportedCredentialFormat is thrown if unsupported credential format is passed to the renderVC method
 
 
 ### Steps involved in SVG Template to SVG Image Conversion
@@ -110,7 +123,57 @@ io.mosip.injivcrenderer/commonMain
  - Render method type should be `TemplateRenderMethod` and render suite should be `svg-mustache`.
 - Note : Embedded SVG Template and hosting render method as jsonld document are not supported in this library. Hosting the SVG Template as URL is supported.
 
+#### Fetching the Template
+- Fetches the SVG Template from the URL provided in the `id` field of the `template` object in the render method.
+- `mediaType` field in renderMethod should be `image/svg+xml` or `application/xml`.
+- Validates the `Content-Type` header in the response while downloading Template from the URL.
+
+##### application/xml
+- If Content-Type is `application/xml`, it will check for the root element of the response to be `<pageSet>`.
+- If root element is `<pageSet>`, it will parse the `<pageSet>` and extract the SVG Template from the `<page>` tag.
+- Example:
+    ```
+    <pageSet>
+        <page>
+            <svg>...</svg>
+        </page>
+        <page>
+            <svg>...</svg>
+        </page>
+    </pageSet>
+    ```
+- If multiple `<page>` tags are present in the `<pageSet>`, it will extract all the SVG Templates from the `<page>` tags and return the list of replaced SVG Templates.
+
+##### image/svg+xml
+- If Content-Type is `image/svg+xml`, it will consider the entire response as SVG Template.
+- Example:
+    ```
+    <svg>...</svg>
+    ```
+- If Content-Type is not `image/svg+xml` or `application/xml`, it will throw `SvgFetchException`.
+
+
+
 #### Preprocessing the SVG Template
+- After fetching raw SVG Template from the URL, it will preprocess the SVG Template for below scenarios before replacing the placeholders.
+
+##### Digest Multibase Validation
+- If the `digestMultibase` field is present in the `template` object, it will validate the downloaded SVG Template using the digestMultibase value.
+- `MultibaseValidationException` is thrown if the validation fails or digestMultibase is invalid.
+- Example:
+    ```
+          "renderMethod": {
+              "type": "TemplateRenderMethod",
+              "renderSuite": "svg-mustache",
+              "template": {
+                      "id": "https://degree.example/credential-templates/bachelors",
+                      "mediaType": "image/svg+xml",
+                      "digestMultibase": "zQmerWC85Wg6wFl9znFCwYxApG270iEu5h6JqWAPdhyxz2dR"
+                  }
+          }
+      ```
+- As per spec `digestMultibase` is optional field and it should follow below standard if present.
+    - An OPTIONAL multibase-encoded Multihash of the render method referenced if id is specified. The multibase value MUST be u (base64url-nopad) and the multihash value MUST be SHA-2 with 256-bits of output (0x12).
 
 ##### QR Code Placeholder
   - If the SVG Template has `{{/qrCodeImage}}` , it will generate the QR code using Pixelpass library and replace the placeholder with generated QR code image in base64 format.
@@ -123,7 +186,21 @@ io.mosip.injivcrenderer/commonMain
         //result => <svg><image id = "qrCodeImage" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAIKklEQVR4nO3de5QdZZnv8e9M7MzMzM7szszM7s"
       
 - Note: It is mandatory to have `id` field in the `<image>` as `qrCodeImage` and placeholder as `{{/qrCodeImage}}` to generate the QR code. Because if it is fallback scenario, `<image>` id will be replaced with `qrCodeFallbackImage` which can be used to identify from consumer side if design have valid QR code or fallback one.
-      
+
+##### Wellknown fallback handling
+- If placeholder for label is present in the SVG Template and concern path is not available in well-known or well-known itself not available, it will check for `/credential_definition/credentialSubject` in th placeholder and takes the path next to that as the value to replace it.
+- Example:
+    ```
+    //Well-known is not available
+    val vcJson = {      "credentialSubject": { "fullName": "Tester", "city": [{"value": "TestCITY", "language": "eng"},{"value": "VilleTest", "language": "fr"}]}
+          
+      val svgTempalte = "<svg>{{/credential_definition/credentialSubject/fullName}} - {{/credentialSubject/fullName/0/value}}</svg>"
+          
+      //result => <svg>Full Name - Tester</svg>
+  ```
+Note: camelCase, PascalCase or snake_case value is converted to Title Case for the label. e.g. fullName or FullName or full_name is converted to Full Name.
+- After replacing the label placeholders, it will replace the rest of the placeholders in the SVG Template with actual VC Json Data.
+
 
 ##### Handling Render Property
   - If the `template` field is an object and has `renderMethod` property. Property in the `renderMethod` will be taken into consideration for further processing and rest of the fields placeholders will be replaced with empty string.
@@ -174,37 +251,6 @@ io.mosip.injivcrenderer/commonMain
           
       //result => <svg>Tester - TestCITY</svg>
   ```
-
-##### Wellknown fallback handling
-- If placeholder for label is present in the SVG Template and concern path is not available in well-known or well-known itself not available, it will check for `/credential_definition/credentialSubject` in th placeholder and takes the path next to that as the value to replace it.
-- Example:
-    ```
-    //Well-known is not available
-    val vcJson = {      "credentialSubject": { "fullName": "Tester", "city": [{"value": "TestCITY", "language": "eng"},{"value": "VilleTest", "language": "fr"}]}
-          
-      val svgTempalte = "<svg>{{/credential_definition/credentialSubject/fullName}} - {{/credentialSubject/fullName/0/value}}</svg>"
-          
-      //result => <svg>Full Name - Tester</svg>
-  ```
-Note: camelCase, PascalCase or snake_case value is converted to Title Case for the label. e.g. fullName or FullName or full_name is converted to Full Name.
-
-##### Digest Multibase Validation
-- If the `digestMultibase` field is present in the `template` object, it will validate the downloaded SVG Template using the digestMultibase value.
-- `MultibaseValidationException` is thrown if the validation fails or digestMultibase is invalid.
-- Example:
-    ```
-          "renderMethod": {
-              "type": "TemplateRenderMethod",
-              "renderSuite": "svg-mustache",
-              "template": {
-                      "id": "https://degree.example/credential-templates/bachelors",
-                      "mediaType": "image/svg+xml",
-                      "digestMultibase": "zQmerWC85Wg6wFl9znFCwYxApG270iEu5h6JqWAPdhyxz2dR"
-                  }
-          }
-      ```
-- As per spec `digestMultibase` is optional field and it should follow below standard if present.
-    - An OPTIONAL multibase-encoded Multihash of the render method referenced if id is specified. The multibase value MUST be u (base64url-nopad) and the multihash value MUST be SHA-2 with 256-bits of output (0x12).
 
 #### Replacing Placeholders in SVG Template
 - Replaces the placeholders in the SVG Template with actual VC Json Data strictly follows JSON Pointer Algorithm RFC6901.
