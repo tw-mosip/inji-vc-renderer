@@ -126,6 +126,8 @@ io.mosip.injivcrenderer/commonMain
 #### Fetching the Template
 - Fetches the SVG Template from the URL provided in the `id` field of the `template` object in the render method.
 - `mediaType` field in renderMethod should be `image/svg+xml` or `application/xml`.
+- `image/svg+xml` is used when the URL directly points to SVG Template.
+- `application/xml` is used when the URL points to XML document which has multiple SVG Templates in `<pageSet>` tag.
 - Validates the `Content-Type` header in the response while downloading Template from the URL.
 
 ##### application/xml
