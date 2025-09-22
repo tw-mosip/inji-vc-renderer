@@ -23,14 +23,17 @@
        - Run Tests using `./gradlew testDebugUnitTest` or `./gradlew testReleaseUnitTest` based on the build type.
 
 ### API
-- `renderVC(credentialFormat: CredentialFormat, wellKnownJson: String? = null, vcJsonString: String)` - expects the Verifiable Credential, Well-known Json and Credential Format as input and returns the list of replaced SVG Templates.
-    - `vcJsonData` - VC Downloaded in stringified format.
-    - `wellKnownJson` - Well-known Json downloaded in stringified format. It is optional parameter.
+- `renderVC(credentialFormat: CredentialFormat, wellknownJsonString: String? = null, vcJsonString: String)` - expects the Verifiable Credential, Well-known Json and Credential Format as input and returns the list of replaced SVG Templates.
     - `credentialFormat` - Enum to specify the credential format. Currently only LDP_VC format is supported.
+    - `wellknownJsonString` - Well-known Json downloaded in stringified format. It is optional parameter.
+    - `vcJsonString` - VC Downloaded in stringified format.
+    
+    
+
 - This method takes entire VC data as input.
 - Example :
 ```
-        val vcJson = """{
+        val vcJsonString = """{
             "credentialSubject": {
                 "fullName": "John",
                 "gender": [
@@ -105,6 +108,10 @@ io.mosip.injivcrenderer/commonMain
 - Render Method Extraction from VC
   - Extracts the render method from the VC Json data.
   - If multiple render methods are present, it will process all the render methods and return the list of replaced SVG Templates.
+
+#### Validate renderSuite and type fields
+For each item in the renderMethodArray, the library validates the `renderSuite` and `type` fields
+- Only `svg-mustache` is supported as renderSuite and `TemplateRenderMethod` is supported as type.
 
 
 #### Downloading SVG Template from URL in VC
@@ -181,20 +188,20 @@ io.mosip.injivcrenderer/commonMain
   - If the SVG Template has `{{/qrCodeImage}}` , it will generate the QR code using Pixelpass library and replace the placeholder with generated QR code image in base64 format.
     - Example:
         ```
-        val vcJson = {"credentialSubject" : "id": "did:example:123456789", "name": "Tester"}
+        val vcJsonString = """{"credentialSubject" : "id": "did:example:123456789", "name": "Tester"}"""
         
         val svgTempalte = "<svg><image id = "qrCodeImage" href="{{/qrCodeImage}}"</svg>"
         
         //result => <svg><image id = "qrCodeImage" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAIKklEQVR4nO3de5QdZZnv8e9M7MzMzM7szszM7s"
-      
-- Note: It is mandatory to have `id` field in the `<image>` as `qrCodeImage` and placeholder as `{{/qrCodeImage}}` to generate the QR code. Because if it is fallback scenario, `<image>` id will be replaced with `qrCodeFallbackImage` which can be used to identify from consumer side if design have valid QR code or fallback one.
+- If the template contains a `{{/qrCodeImage}}` placeholder but the QR code generation fails, it replaces the placeholder with an fallback image.
+- Note : It is mandatory to have <image id= "qrCodeImage" .../> tag in the SVG template for the QR code replacement to work. Because if it is fallback scenario, `<image>` id will be replaced with `qrCodeFallbackImage` which can be used to identify from consumer side if design have valid QR code or fallback one.
 
 ##### Wellknown fallback handling
 - If placeholder for label is present in the SVG Template and concern path is not available in well-known or well-known itself not available, it will check for `/credential_definition/credentialSubject` in th placeholder and takes the path next to that as the value to replace it.
 - Example:
     ```
     //Well-known is not available
-    val vcJson = {      "credentialSubject": { "fullName": "Tester", "city": [{"value": "TestCITY", "language": "eng"},{"value": "VilleTest", "language": "fr"}]}
+    val vcJsonString = """{      "credentialSubject": { "fullName": "Tester", "city": [{"value": "TestCITY", "language": "eng"},{"value": "VilleTest", "language": "fr"}]}"""
           
       val svgTempalte = "<svg>{{/credential_definition/credentialSubject/fullName}} - {{/credentialSubject/fullName/0/value}}</svg>"
           
@@ -228,7 +235,7 @@ Note: camelCase, PascalCase or snake_case value is converted to Title Case for t
 - For array fields in the VC, index based approach will be followed.
 - Example:
     ```
-    val vcJson = {"credentialSubject" : "benefits": ["Critical Surgery", "Full Health Checkup", "Testing"]}
+    val vcJsonString = """{"credentialSubject" : "benefits": ["Critical Surgery", "Full Health Checkup", "Testing"]}"""
     
     val svgTempalte = "<svg>{{/benefits/0}},{{/benefits/1}}</svg>"
     
@@ -236,7 +243,7 @@ Note: camelCase, PascalCase or snake_case value is converted to Title Case for t
     ```
 - Example for array of objects:
     ```
-    val vcJson = {      "credentialSubject": {          "awards": [              {"title": "Award1", "year": "2020"},              {"title": "Award2", "year": "2021"}          ]      }  }
+    val vcJsonString = """{      "credentialSubject": {          "awards": [              {"title": "Award1", "year": "2020"},              {"title": "Award2", "year": "2021"}          ]      }  }"""
     
     val svgTemplate = "<svg>{{/credentialSubject/awards/0/title}} - {{/credentialSubject/awards/0/year}}, {{/credentialSubject/awards/1/title}} - {{/credentialSubject/awards/1/year}}</svg>"
     
@@ -247,7 +254,7 @@ Note: camelCase, PascalCase or snake_case value is converted to Title Case for t
 - For locale handling, same JSON Pointer Algorithm is used to extract the value from the VC.
 - Example:
     ```
-    val vcJson = {      "credentialSubject": { "fullName": "Tester", "city": [{"value": "TestCITY", "language": "eng"},{"value": "VilleTest", "language": "fr"}]}
+    val vcJsonString = """{      "credentialSubject": { "fullName": "Tester", "city": [{"value": "TestCITY", "language": "eng"},{"value": "VilleTest", "language": "fr"}]}"""
           
       val svgTempalte = "<svg>{{/credentialSubject/fullName}} - {{/credentialSubject/city/0/value}}</svg>"
           

@@ -1,10 +1,10 @@
 ## InjiVcRenderer Library Flow
 
-This document provides a comprehensive overview of the process for presenting the VC in Inji Wallet using gsthe Inji VC Renderer Library and the conversion of SVG to PDF.
+This document explains how the Inji VC Renderer Library renders VC data into SVG templates in the Wallet and how to convert SVG into PDF.
 
 ### Actors involved
 1. User
-2. Inji Wallet
+2. Wallet
 3. Inji VC Renderer Library (Library for rendering VC using SVG templates)
 4. Pixelpass (Library for generating QR code image)
 
@@ -14,13 +14,13 @@ This document provides a comprehensive overview of the process for presenting th
 sequenceDiagram
     autonumber
   participant User as 🙋 User
-  participant Wallet as  📱 Inji Wallet
+  participant Wallet as  📱 Wallet
   participant Renderer_Lib as 📄 Inji VC Renderer (Library)
   participant Pixelpass as 📄 Pixelpass
 
     %% --- API: renderMethod ---
     User->>Wallet:Taps on Mini Card View to display detailed view
-    Wallet->>Renderer_Lib: renderMethod(format, wellknown, VC)
+    Wallet->>Renderer_Lib: renderMethod(credentialFormat, wellknownJsonString, vcJsonString)
     Renderer_Lib ->> Renderer_Lib: Parse Render Method field
     Renderer_Lib ->> Renderer_Lib: Validate renderSuite and TemplateRenderMethod
     Renderer_Lib ->> Renderer_Lib: Based on the mediaType, fetch the template
@@ -49,17 +49,17 @@ sequenceDiagram
 The User taps on the Mini Card View in the Wallet to see the detailed view of a Verifiable Credential (VC).
 
 ##### 2. Call renderMethod API
-The Wallet calls the InjiVcRenderer library’s renderVC(credentialFormat, wellknownJson, vcJson) API with the required inputs.
+The Wallet calls the InjiVcRenderer library’s renderVC(credentialFormat, wellknownJsonString, vcJsonString) API with the required inputs.
 ````
 InjiVcRenderer.renderVC(
     credentialFormat, 
-    wellknownJson, 
-    vcJson
+    wellknownJsonString, 
+    vcJsonString
 ): listOfSVGs
 
 - credentialFormat: It is the format of the credential. Only for ldp_vc is supported.
-- wellknownJson: It is the wellknown JSON data which has label values to be replaced in the template.
-- vcJson: It is the Verifiable Credential JSON data which has claim values to be replaced in the template.
+- wellknownJsonString: It is the wellknown JSON data which has label values to be replaced in the template.
+- vcJsonString: It is the Verifiable Credential JSON data which has claim values to be replaced in the template.
 Returns: It returns the list of rendered SVGs with all placeholders replaced.
 ````
 ##### 3. Parse the render method field
@@ -77,7 +77,7 @@ The library fetches the SVG template based on the mediaType and validates its in
 
 ##### 6. Validate Digest Multibase hash
 - If `digestMultibase` field is present,  it computes the Digest Multibase hash of the extracted SVG and compares it with the provided hash to ensure integrity.
-- If the hashes do not match, it throws an error and stops further processing.
+- If the hashes do not match, it throws an error to the consumer.
 
 ##### 7. Generate QR code image
 - If the template contains a `{{/qrCodeImage}}` placeholder, the library calls Pixelpass to generate a QR code and substitutes the base64 QR image in the template.
@@ -90,7 +90,8 @@ The library fetches the SVG template based on the mediaType and validates its in
 - Note : It is mandatory to have <image id= "qrCodeImage" .../> tag in the SVG template for the QR code replacement to work.
 
 ##### 10. Wellknown replacement logic
-- If wellknown JSON is empty or null, it skips the label replacement step and if the template has the placeholders for wellknown like `{{/credential_definition/credentialSubject/fullName}}`, fallback replacement will be Full Name(Title Case).
+- If the placeholder for label is present in the SVG Template and concern path is not available in well-known or well-known itself not available, it will check for `{{/credential_definition/credentialSubject/fullName}}` in the placeholder and takes the field next to `/credential_definition/credentialSubject` as the fallback value to replace it.
+- For example: `{{/credential_definition/credentialSubject/fullName}}` will be replaced to `Full Name`(Title Case).
 - If wellknown JSON is present, it replaces the label placeholders in the template with corresponding values from the wellknown JSON.
 
 ##### 11. VC replacement logic
