@@ -1,25 +1,39 @@
 package io.mosip.injivcrenderer.templateEngine.svg
+
 import org.apache.fop.svg.PDFTranscoder
 import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
+import org.apache.pdfbox.multipdf.PDFMergerUtility
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.Base64
 
 
 actual fun svgListToPdfBase64(svgList: List<String>): String {
-    val outputStream = ByteArrayOutputStream()
-    val transcoder = PDFTranscoder()
+    val mergedPdf = PDFMergerUtility()
+    val tempPdfStreams = mutableListOf<ByteArrayInputStream>()
 
-    svgList.forEach { svg ->
-        val input = TranscoderInput(ByteArrayInputStream(svg.toByteArray()))
-        val output = TranscoderOutput(outputStream)
-        transcoder.transcode(input, output)
+    try {
+        svgList.forEach { svg ->
+            val transcoder = PDFTranscoder()
+            val outputStream = ByteArrayOutputStream()
+            val input = TranscoderInput(ByteArrayInputStream(svg.toByteArray()))
+            val output = TranscoderOutput(outputStream)
+
+            transcoder.transcode(input, output)
+            outputStream.flush()
+
+            tempPdfStreams.add(ByteArrayInputStream(outputStream.toByteArray()))
+            outputStream.close()
+        }
+
+        val finalOutput = ByteArrayOutputStream()
+        mergedPdf.destinationStream = finalOutput
+        tempPdfStreams.forEach { mergedPdf.addSource(it) }
+        mergedPdf.mergeDocuments(null)
+
+        return Base64.getEncoder().encodeToString(finalOutput.toByteArray())
+    } finally {
+        tempPdfStreams.forEach { it.close() }
     }
-
-    outputStream.flush()
-    val pdfBytes = outputStream.toByteArray()
-    outputStream.close()
-
-    return Base64.getEncoder().encodeToString(pdfBytes)
 }

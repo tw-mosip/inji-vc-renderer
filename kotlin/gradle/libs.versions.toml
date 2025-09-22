@@ -15,6 +15,7 @@ composeBom = "2024.04.01"
 mockito = "4.8.1"
 mockitoKotlin = "5.0.0"
 okhttp= "4.10.0"
+pdfbox = "2.0.32"
 pdfboxAndroid = "2.0.27.0"
 pixelpass="0.7.0"
 junitJupiter = "5.8.1"
@@ -47,6 +48,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 mockito-core = { group = "org.mockito", name="mockito-core", version.ref= "mockito"}
 mockito-inline = { group = "org.mockito", name="mockito-inline", version.ref= "mockito"}
 mockito-kotlin = { group = "org.mockito.kotlin", name="mockito-kotlin", version.ref= "mockitoKotlin"}
+pdfbox = { module = "org.apache.pdfbox:pdfbox", version.ref = "pdfbox" }
 pdfbox-android = { module = "com.tom-roush:pdfbox-android", version.ref = "pdfboxAndroid" }
 squareup-okhttp= { group = "com.squareup.okhttp3", name="okhttp", version.ref= "okhttp"}
 pixelpass-jar= { group = "io.mosip", name="pixelpass-jar", version.ref= "pixelpass"}

@@ -12,6 +12,14 @@ public class Main {
         List<Object> svgImage = injiVcRenderer.renderVC(CredentialFormat.LDP_VC, null, farmerVc);
         System.out.println(":::::Replaced Template-->"+svgImage);
 
+        List<String> svgStrings = svgImage.stream()
+                .map(Object::toString)
+                .toList();
+
+        String base64Pdf = injiVcRenderer.convertSvgToPdf(svgStrings);
+        System.out.println(":::::Base64 PDF --> " + base64Pdf);
+
+
     }
 
     static String farmerVc = """

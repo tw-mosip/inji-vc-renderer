@@ -50,6 +50,7 @@ kotlin {
                 implementation(libs.pixelpass.jar)
                 implementation(libs.batik.transcoder)
                 implementation(libs.fop)
+                implementation(libs.pdfbox)
             }
         }
         val androidMain by getting {
