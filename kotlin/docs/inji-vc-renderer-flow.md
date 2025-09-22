@@ -16,7 +16,7 @@ sequenceDiagram
   participant User as 🙋 User
   participant Wallet as  📱 Inji Wallet
   participant Renderer_Lib as 📄 Inji VC Renderer (Library)
-  participant 📄 Pixelpass
+  participant Pixelpass as 📄 Pixelpass
 
     %% --- API: renderMethod ---
     User->>Wallet:Taps on Mini Card View to display detailed view
@@ -42,7 +42,6 @@ sequenceDiagram
     Renderer_Lib ->> Renderer_Lib: Convert SVGs into PDF pages and encode to base64
     Renderer_Lib -->> Wallet: Return base64 string
     Wallet -->> Wallet: Render or Share PDF
-
 ```
 
 #### Steps involved
