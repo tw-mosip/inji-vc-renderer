@@ -12,39 +12,36 @@ This document provides a comprehensive overview of the process for presenting th
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Inji Wallet
-    participant Inji VC Renderer Library
-    participant Pixelpass
+    autonumber
+  participant User as 🙋 User
+  participant Wallet as  📱 Inji Wallet
+  participant Renderer_Lib as 📄 Inji VC Renderer (Library)
+  participant 📄 Pixelpass
 
     %% --- API: renderMethod ---
-    User->>Inji Wallet:Taps on Mini Card View to display detailed view
-    Inji Wallet->>Inji VC Renderer Library: renderMethod(format, wellknown, VC)
-    Inji VC Renderer Library ->> Inji VC Renderer Library: Parse Render Method field
-    Inji VC Renderer Library ->> Inji VC Renderer Library: Validate renderSuite and TemplateRenderMethod
-    Inji VC Renderer Library ->> Inji VC Renderer Library: Based on the mediaType, fetch the template
-    Inji VC Renderer Library ->> Inji VC Renderer Library: Validate Digest Multibase hash
-    Inji VC Renderer Library ->> Inji VC Renderer Library: Prepocess the extracted SVG templates with replacement logic
+    User->>Wallet:Taps on Mini Card View to display detailed view
+    Wallet->>Renderer_Lib: renderMethod(format, wellknown, VC)
+    Renderer_Lib ->> Renderer_Lib: Parse Render Method field
+    Renderer_Lib ->> Renderer_Lib: Validate renderSuite and TemplateRenderMethod
+    Renderer_Lib ->> Renderer_Lib: Based on the mediaType, fetch the template
+    Renderer_Lib ->> Renderer_Lib: Validate Digest Multibase hash
 
-    rect rgb(230,230,250)
-    note right of Inji VC Renderer Library: Replacement Logic
-    Inji VC Renderer Library ->> Inji VC Renderer Library: Replace label placeholders with wellknown JSON
-    Inji VC Renderer Library ->> Inji VC Renderer Library: Replace value placeholders with VC JSON
-    Inji VC Renderer Library ->> Pixelpass: Generate QR code image if template has `/qrCodeImage`
-    Pixelpass -->> Inji VC Renderer Library: Return base64 string of QR code image
-    Inji VC Renderer Library ->> Inji VC Renderer Library: Replace QR placeholder with base64 string
-    end
+    Renderer_Lib ->> Pixelpass: Generate QR code image if template has `/qrCodeImage`
+    Pixelpass -->> Renderer_Lib: Return base64 string of QR code image
+    Renderer_Lib ->> Renderer_Lib: Replace QR placeholder with base64 string
+    Renderer_Lib ->> Renderer_Lib: Replace label placeholders with wellknown JSON
+    Renderer_Lib ->> Renderer_Lib: Replace value placeholders with VC JSON
 
-    Inji VC Renderer Library -->> Inji Wallet: Return list of SVG images with placeholders replaced
-    Inji Wallet->>Inji Wallet: Render the SVG images
+
+    Renderer_Lib -->> Wallet: Return list of SVG images with placeholders replaced
+    Wallet->>Wallet: Render the SVG images
 
     %% --- API: convertSvgToPdf ---
-    User->>Inji Wallet:Taps on `Export as Pdf`
-    Inji Wallet->>Inji VC Renderer Library: convertSvgToPdf(list of SVGs)
-    Inji VC Renderer Library ->> Inji VC Renderer Library: Convert SVGs into PDF pages and encode to base64
-    Inji VC Renderer Library -->> Inji Wallet: Return base64 string
-    Inji Wallet -->> Inji Wallet: Render or Share PDF
-
+    User->>Wallet:Taps on `Export as Pdf`
+    Wallet->>Renderer_Lib: convertSvgToPdf(list of SVGs)
+    Renderer_Lib ->> Renderer_Lib: Convert SVGs into PDF pages and encode to base64
+    Renderer_Lib -->> Wallet: Return base64 string
+    Wallet -->> Wallet: Render or Share PDF
 
 ```
 
@@ -66,40 +63,51 @@ InjiVcRenderer.renderVC(
 - vcJson: It is the Verifiable Credential JSON data which has claim values to be replaced in the template.
 Returns: It returns the list of rendered SVGs with all placeholders replaced.
 ````
-##### 3. Parse and validate rendering metadata
-The library parses the renderMethod field, validates the `renderSuite` and `type` fields
+##### 3. Parse the render method field
+The library parses the renderMethod field from the VC and return it as renderMethodArray.
+
+##### 4. Validate renderSuite and type
+For each item in the renderMethodArray, the library validates the `renderSuite` and `type` fields
 - Only `svg-mustache` is supported as renderSuite and `TemplateRenderMethod` is supported as type.
 
-##### 4. Fetch and validate template
+##### 5. Fetch template
 The library fetches the SVG template based on the mediaType and validates its integrity using the provided Digest Multibase hash.
 - If mediaType is `application/xml`, it extracts the SVG content from the XML enclosed in <PageSet> tag.
 - If mediaType is `image/svg+xml`, it directly uses the SVG content.
-- It computes the Digest Multibase hash of the extracted SVG and compares it with the provided hash to ensure integrity.
 
-##### 5. Preprocess SVG template
-The library prepares the SVG template for rendering by running preprocessing logic:
 
-###### QR code replacement logic
+##### 6. Validate Digest Multibase hash
+- If `digestMultibase` field is present,  it computes the Digest Multibase hash of the extracted SVG and compares it with the provided hash to ensure integrity.
+- If the hashes do not match, it throws an error and stops further processing.
+
+##### 7. Generate QR code image
 - If the template contains a `{{/qrCodeImage}}` placeholder, the library calls Pixelpass to generate a QR code and substitutes the base64 QR image in the template.
+
+##### 8. Pixelpass returns base64 string of QR code image
+- Pixelpass library generates the QR code and returns the base64 string of the QR code image to the InjiVcRenderer library.
+
+##### 9. QR Code replacement logic
 - If the template contains a `{{/qrCodeImage}}` placeholder but the QR code generation fails, it replaces the placeholder with an fallback image.
 - Note : It is mandatory to have <image id= "qrCodeImage" .../> tag in the SVG template for the QR code replacement to work.
-- 
-###### Wellknown replacement logic
+
+##### 10. Wellknown replacement logic
 - If wellknown JSON is empty or null, it skips the label replacement step and if the template has the placeholders for wellknown like `{{/credential_definition/credentialSubject/fullName}}`, fallback replacement will be Full Name(Title Case).
 - If wellknown JSON is present, it replaces the label placeholders in the template with corresponding values from the wellknown JSON.
 
-###### VC replacement logic
+##### 11. VC replacement logic
 - If replacement for the VC Json placeholders are not found in the VC JSON, it falls back to `-`.
 - If replacement for the VC Json placeholders are found in the VC JSON, it replaces them with the corresponding values from the VC JSON.
 
-##### 6. Return rendered SVGs to Wallet
+##### 12. Return rendered SVGs to Wallet
 - The library returns a list of processed SVGs with all placeholders replaced.
+
+##### 13. Render SVGs in Wallet
 - The Wallet renders these SVGs to display the detailed VC view to the user.
 
-##### 7. Tap on Export as PDF
+##### 14. User wants to Export as PDF
 The User taps on Export as PDF in the Wallet.
 
-##### 8. Call convertSvgToPdf API
+##### 15. Call convertSvgToPdf API
 The Wallet calls the InjiVcRenderer library’s convertSvgToPdf(listOfSVGs) API with the rendered SVG list.
 ````
 InjiVcRenderer.convertSvgToPdf(
@@ -109,9 +117,11 @@ InjiVcRenderer.convertSvgToPdf(
 - Returns: It returns the base64 string of the generated PDF.
 ````
 
-##### 9. Convert SVGs to PDF
+##### 16. Convert SVGs to PDF
 The library converts each SVG into a PDF page, merges them into a document, and encodes the PDF into a base64 string.
 
-##### 10. Return PDF to Wallet
+##### 17. Return PDF to Wallet
 - The library returns the base64-encoded PDF to the Wallet.
+
+##### 18. Render or Share PDF
 - The Wallet can then either display the PDF for preview or share it with other applications.
