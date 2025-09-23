@@ -11,7 +11,6 @@ import javax.xml.transform.OutputKeys
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.dom.DOMSource
 import javax.xml.transform.stream.StreamResult
-import io.mosip.injivcrenderer.extensions.getElementsByTagNameIgnoreCase
 
 class XMLHelper(private val traceabilityId: String) {
 
@@ -24,7 +23,7 @@ class XMLHelper(private val traceabilityId: String) {
 
             validatePageSetRoot(document.documentElement)
 
-            val pages = document.getElementsByTagNameIgnoreCase(PAGE)
+            val pages = document.getElementsByTagName(PAGE)
             validatePagesExist(pages.length)
 
             for (i in 0 until pages.length) {
@@ -49,7 +48,7 @@ class XMLHelper(private val traceabilityId: String) {
             throw VcRendererExceptions.PageSetParsingException(
                 traceabilityId,
                 this::class.simpleName,
-                "Root element must be <Pageset>"
+                "Root element must be <pageSet>"
             )
         }
     }
@@ -59,18 +58,18 @@ class XMLHelper(private val traceabilityId: String) {
             throw VcRendererExceptions.PageSetParsingException(
                 traceabilityId,
                 this::class.simpleName,
-                "<Pageset> must contain at least one <Page>"
+                "<pageSet> must contain at least one <page> element"
             )
         }
     }
 
     private fun getSvgNodeFromPage(page: Element, pageIndex: Int): Element {
-        val svgNodes = page.getElementsByTagNameIgnoreCase(SVG)
+        val svgNodes = page.getElementsByTagName(SVG)
         if (svgNodes.length == 0) {
             throw VcRendererExceptions.PageSetParsingException(
                 traceabilityId,
                 this::class.simpleName,
-                "<Page> at index $pageIndex does not contain a <svg> element"
+                "<page> at index $pageIndex does not contain a <svg> element"
             )
         }
         return svgNodes.item(0) as Element

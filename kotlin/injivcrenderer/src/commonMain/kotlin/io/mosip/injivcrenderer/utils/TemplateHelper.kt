@@ -36,7 +36,7 @@ class TemplateHelper(private val traceabilityId: String) {
     }
 
     private fun extractSVGList(templateResponse: TemplateResponse): List<String> =
-        if (templateResponse.isXmlWithPageSet()) {
+        if (templateResponse.isXmlTemplate()) {
             XMLHelper(traceabilityId).getSVGListFromPageSet(templateResponse.body)
         } else {
             listOf(templateResponse.body)

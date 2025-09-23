@@ -152,6 +152,7 @@ For each item in the renderMethodArray, the library validates the `renderSuite` 
     </pageSet>
     ```
 - If multiple `<page>` tags are present in the `<pageSet>`, it will extract all the SVG Templates from the `<page>` tags and return the list of replaced SVG Templates.
+- Note: Tags are case sensitive and it should be exactly `<pageSet>` and `<page>`.
 
 ##### image/svg+xml
 - If Content-Type is `image/svg+xml`, it will consider the entire response as SVG Template.
@@ -270,3 +271,4 @@ Note: camelCase, PascalCase or snake_case value is converted to Title Case for t
 - [JSON Pointer Algorithm - RFC6901](https://www.rfc-editor.org/rfc/rfc6901)
 - [Draft Implementation of Verifiable Credential Rendering Methods](https://w3c-ccg.github.io/vc-render-method/#the-rendermethod-property)
 - [Data model 2.0 implementation](https://www.w3.org/TR/vc-data-model-2.0/#reserved-extension-points)
+- [Multiple Pages](https://www.w3.org/TR/2004/WD-SVG12-20041027/multipage.html)

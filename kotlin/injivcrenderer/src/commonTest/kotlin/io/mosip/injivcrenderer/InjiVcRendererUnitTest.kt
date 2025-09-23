@@ -44,21 +44,18 @@ class InjiVcRendererTest {
                             "{{/credential_definition/credentialSubject/fullName/display/1/name}}: {{/credentialSubject/fullName/1/value}}" +
                             "</svg>")
                     url.contains("test-digest.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
-                    url.contains("xml-invalid-missing-pageset.xml") -> TemplateResponse(ContentType.XML, "<Pageset-Invalid></Pageset-Invalid>")
-                    url.contains("xml-invalid-missing-pages.xml") -> TemplateResponse(ContentType.XML, "<Pageset></Pageset>")
-                    url.contains("xml-invalid-missing-pages.xml") -> TemplateResponse(ContentType.XML,  "<Pageset>" +
-                            "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
-                            "</Pageset>")
-                    url.contains("xml-valid-with-2-pages.xml") -> TemplateResponse(ContentType.XML, "<Pageset>" +
-                            "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
-                            "<Page><svg>Mobile: {{/credentialSubject/mobile}}</svg></Page>" +
-                            "</Pageset>")
-                    url.contains("xml-valid-with-1-page.xml") -> TemplateResponse(ContentType.XML,  "<Pageset>" +
-                            "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
-                            "</Pageset>")
-                    url.contains("xml-invalid-missing-svg.xml") -> TemplateResponse(ContentType.XML,  "<Pageset>" +
-                            "<Page>Email: {{/credentialSubject/email}}</Page>" +
-                            "</Pageset>")
+                    url.contains("xml-valid-with-2-pages.xml") -> TemplateResponse(ContentType.XML, "<pageSet>" +
+                            "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
+                            "<page><svg>Mobile: {{/credentialSubject/mobile}}</svg></page>" +
+                            "</pageSet>")
+                    url.contains("xml-valid-with-1-page.xml") -> TemplateResponse(ContentType.XML,  "<pageSet>" +
+                            "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
+                            "</pageSet>")
+                    url.contains("xml-invalid-missing-svg.xml") -> TemplateResponse(ContentType.XML,  "<pageSet>" +
+                            "<page>Email: {{/credentialSubject/email}}</page>" +
+                            "</pageSet>")
+                    url.contains("xml-invalid-missing-pageset.xml") -> TemplateResponse(ContentType.XML, "<XML></XML>")
+                    url.contains("xml-invalid-missing-pages.xml") -> TemplateResponse(ContentType.XML, "<pageSet></pageSet>")
                     else -> TemplateResponse(ContentType.SVG, "<svg>default</svg>")
                 }
             }
@@ -752,10 +749,10 @@ class InjiVcRendererTest {
               }
         }"""
         val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
-        "<Pageset>" +
-                "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
-                "<Page><svg>Mobile: {{/credentialSubject/mobile}}</svg></Page>" +
-                "</Pageset>"
+        "<pageSet>" +
+                "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
+                "<page><svg>Mobile: {{/credentialSubject/mobile}}</svg></page>" +
+                "</pageSet>"
         assertEquals(
             listOf(
                 "<svg>Email: test@test.com</svg>", "<svg>Mobile: 1234567890</svg>"), result)
@@ -780,9 +777,9 @@ class InjiVcRendererTest {
               }
         }"""
         val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
-        "<Pageset>" +
-                "<Page><svg>Email: {{/credentialSubject/email}}</svg></Page>" +
-                "</Pageset>"
+        "<pageSet>" +
+                "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
+                "</pageSet>"
         assertEquals(
             listOf(
                 "<svg>Email: test@test.com</svg>"), result)
@@ -808,7 +805,7 @@ class InjiVcRendererTest {
                 injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
-        assertTrue(actualException.message!!.contains("Root element must be <Pageset>"))
+        assertTrue(actualException.message!!.contains("Root element must be <pageSet>"))
 
     }
 
@@ -831,7 +828,7 @@ class InjiVcRendererTest {
                 injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
-        assertTrue(actualException.message!!.contains("<Pageset> must contain at least one <Page>"))
+        assertTrue(actualException.message!!.contains("<pageSet> must contain at least one <page> element"))
 
     }
 

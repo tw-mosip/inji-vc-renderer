@@ -71,7 +71,7 @@ For each item in the renderMethodArray, the library validates the `renderSuite` 
 
 ##### 5. Fetch template
 The library fetches the SVG template based on the mediaType and validates its integrity using the provided Digest Multibase hash.
-- If mediaType is `application/xml`, it extracts the SVG content from the XML enclosed in <PageSet> tag.
+- If mediaType is `application/xml`, it extracts the SVG content from the XML enclosed in <pageSet> tag.
 - If mediaType is `image/svg+xml`, it directly uses the SVG content.
 
 
