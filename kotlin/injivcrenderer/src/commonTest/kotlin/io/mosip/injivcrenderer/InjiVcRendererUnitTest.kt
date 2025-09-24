@@ -3,12 +3,14 @@ package io.mosip.injivcrenderer
 import io.mosip.injivcrenderer.constants.Constants.QR_CODE_FALLBACK_IMAGE_ID
 import io.mosip.injivcrenderer.constants.Constants.SVG_MUSTACHE
 import io.mosip.injivcrenderer.constants.Constants.TEMPLATE_RENDER_METHOD
+import io.mosip.injivcrenderer.constants.ContentType
 import io.mosip.injivcrenderer.constants.CredentialFormat
 import io.mosip.injivcrenderer.constants.VcRendererErrorCodes
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 import io.mosip.injivcrenderer.networkManager.NetworkManager
+import io.mosip.injivcrenderer.networkManager.TemplateResponse
 import io.mosip.injivcrenderer.qrCode.QrCodeGenerator
-import io.mosip.injivcrenderer.utils.Utils.Companion.DEFAULT_FALLBACK_QR_BASE64
+import io.mosip.injivcrenderer.qrCode.QrCodeGenerator.Companion.DEFAULT_FALLBACK_QR_BASE64
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mockConstruction
@@ -28,21 +30,33 @@ class InjiVcRendererTest {
     @BeforeTest
     fun setup() {
         mockConstruction = mockConstruction(NetworkManager::class.java) { mock, _ ->
-            whenever(mock.fetchSvgAsText(any())).thenAnswer { invocation ->
+            whenever(mock.fetch(any())).thenAnswer { invocation ->
                 val url = invocation.arguments[0] as String
                 when {
-                    url.contains("normal.svg") -> "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>"
-                    url.contains("arrays.svg") -> "<svg>Benefits: {{/credentialSubject/benefits/0}}, {{/credentialSubject/benefits/1}}</svg>"
-                    url.contains("with-locale-object.svg") -> "<svg>Full Name - {{/credentialSubject/fullName/en}},முழுப் பெயர் - {{/credentialSubject/fullName/tam}}</svg>"
-                    url.contains("with-locale-as-array-of-object.svg") -> "<svg>Full Name - {{/credentialSubject/fullName/0/value}},முழுப் பெயர் - {{/credentialSubject/fullName/1/value}}</svg>"
-                    url.contains("nested-object.svg") -> "<svg>Address : {{/credentialSubject/addressLine1/0/value}}****{{/credentialSubject/region/0/value}}****{{/credentialSubject/city/0/value}}***</svg>"
-                    url.contains("qrcode.svg") -> "<svg>QR code : <image id = \"qrCodeImage\" xlink:href={{/qrCodeImage}}</svg>"
-                    url.contains("multilingual.svg") -> "<svg>" +
+                    url.contains("normal.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
+                    url.contains("arrays.svg") -> TemplateResponse(ContentType.SVG, "<svg>Benefits: {{/credentialSubject/benefits/0}}, {{/credentialSubject/benefits/1}}</svg>")
+                    url.contains("with-locale-object.svg") -> TemplateResponse(ContentType.SVG, "<svg>Full Name - {{/credentialSubject/fullName/en}},முழுப் பெயர் - {{/credentialSubject/fullName/tam}}</svg>")
+                    url.contains("with-locale-as-array-of-object.svg") -> TemplateResponse(ContentType.SVG, "<svg>Full Name - {{/credentialSubject/fullName/0/value}},முழுப் பெயர் - {{/credentialSubject/fullName/1/value}}</svg>")
+                    url.contains("nested-object.svg") -> TemplateResponse(ContentType.SVG, "<svg>Address : {{/credentialSubject/addressLine1/0/value}}****{{/credentialSubject/region/0/value}}****{{/credentialSubject/city/0/value}}***</svg>")
+                    url.contains("qrcode.svg") -> TemplateResponse(ContentType.SVG, "<svg>QR code : <image id = \"qrCodeImage\" xlink:href={{/qrCodeImage}}</svg>")
+                    url.contains("multilingual.svg") -> TemplateResponse(ContentType.SVG, "<svg>" +
                             "{{/credential_definition/credentialSubject/fullName/display/0/name}}: {{/credentialSubject/fullName/0/value}}," +
                             "{{/credential_definition/credentialSubject/fullName/display/1/name}}: {{/credentialSubject/fullName/1/value}}" +
-                            "</svg>"
-                    url.contains("test-digest.svg") -> "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>"
-                    else -> "<svg>default</svg>"
+                            "</svg>")
+                    url.contains("test-digest.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
+                    url.contains("xml-valid-with-2-pages.xml") -> TemplateResponse(ContentType.XML, "<pageSet>" +
+                            "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
+                            "<page><svg>Mobile: {{/credentialSubject/mobile}}</svg></page>" +
+                            "</pageSet>")
+                    url.contains("xml-valid-with-1-page.xml") -> TemplateResponse(ContentType.XML,  "<pageSet>" +
+                            "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
+                            "</pageSet>")
+                    url.contains("xml-invalid-missing-svg.xml") -> TemplateResponse(ContentType.XML,  "<pageSet>" +
+                            "<page>Email: {{/credentialSubject/email}}</page>" +
+                            "</pageSet>")
+                    url.contains("xml-invalid-missing-pageset.xml") -> TemplateResponse(ContentType.XML, "<XML></XML>")
+                    url.contains("xml-invalid-missing-pages.xml") -> TemplateResponse(ContentType.XML, "<pageSet></pageSet>")
+                    else -> TemplateResponse(ContentType.SVG, "<svg>default</svg>")
                 }
             }
         }
@@ -717,8 +731,129 @@ class InjiVcRendererTest {
 
     }
 
+    @Test
+    fun `test valid xml - with 2 pages`() {
+        val vcJsonString = """{
+            "credentialSubject": {
+                "email": "test@test.com",
+                "mobile": "1234567890"
+            },
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-valid-with-2-pages.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        "<pageSet>" +
+                "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
+                "<page><svg>Mobile: {{/credentialSubject/mobile}}</svg></page>" +
+                "</pageSet>"
+        assertEquals(
+            listOf(
+                "<svg>Email: test@test.com</svg>", "<svg>Mobile: 1234567890</svg>"), result)
 
+    }
 
+    @Test
+    fun `test valid xml - with 1 page`() {
+        val vcJsonString = """{
+            "credentialSubject": {
+                "email": "test@test.com",
+                "mobile": "1234567890"
+            },
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-valid-with-1-page.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        "<pageSet>" +
+                "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
+                "</pageSet>"
+        assertEquals(
+            listOf(
+                "<svg>Email: test@test.com</svg>"), result)
+
+    }
+
+    @Test
+    fun `test invalid xml - missing pageset`() {
+        val vcJsonString = """{
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-invalid-missing-pageset.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+
+        val actualException =
+            assertFailsWith<VcRendererExceptions.PageSetParsingException> {
+                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+            }
+        assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
+        assertTrue(actualException.message!!.contains("Root element must be <pageSet>"))
+
+    }
+
+    @Test
+    fun `test invalid xml - missing page`() {
+        val vcJsonString = """{
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-invalid-missing-pages.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+
+        val actualException =
+            assertFailsWith<VcRendererExceptions.PageSetParsingException> {
+                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+            }
+        assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
+        assertTrue(actualException.message!!.contains("<pageSet> must contain at least one <page> element"))
+
+    }
+
+    @Test
+    fun `test invalid xml - missing svg`() {
+        val vcJsonString = """{
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "xml-invalid-missing-svg.xml",
+                        "mediaType": "application/xml"
+                      }
+                  }
+              }
+        }"""
+
+        val actualException =
+            assertFailsWith<VcRendererExceptions.PageSetParsingException> {
+                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+            }
+        assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
+        assertTrue(actualException.message!!.contains("does not contain a <svg> element"))
+
+    }
 
 }
 

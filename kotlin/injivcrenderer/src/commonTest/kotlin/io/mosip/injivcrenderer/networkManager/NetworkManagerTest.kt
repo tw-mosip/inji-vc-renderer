@@ -32,7 +32,7 @@ class NetworkManagerTest {
         val manager = NetworkManager(traceId, mockClient)
 
         val ex = assertFailsWith<VcRendererExceptions.SvgFetchException> {
-            manager.fetchSvgAsText(testUrl)
+            manager.fetch(testUrl)
         }
 
         assertEquals(SVG_FETCH_ERROR, ex.errorCode)
@@ -53,10 +53,10 @@ class NetworkManagerTest {
         val manager = NetworkManager(traceId, mockClient)
 
         val ex = assertFailsWith<VcRendererExceptions.SvgFetchException> {
-            manager.fetchSvgAsText(testUrl)
+            manager.fetch(testUrl)
         }
         assertEquals(SVG_FETCH_ERROR, ex.errorCode)
-        assert(ex.message!!.contains("Expected image/svg+xml"))
+        assert(ex.message!!.contains("Unsupported content type:"))
     }
 
     @Test
@@ -76,7 +76,7 @@ class NetworkManagerTest {
         val manager = NetworkManager(traceId, mockClient)
 
         val ex = assertFailsWith<VcRendererExceptions.SvgFetchException> {
-            manager.fetchSvgAsText(testUrl)
+            manager.fetch(testUrl)
         }
 
         assertEquals(SVG_FETCH_ERROR, ex.errorCode)
@@ -94,7 +94,7 @@ class NetworkManagerTest {
         val manager = NetworkManager(traceId, mockClient)
 
         val ex = assertFailsWith<VcRendererExceptions.SvgFetchException> {
-            manager.fetchSvgAsText(testUrl)
+            manager.fetch(testUrl)
         }
 
         assertEquals(SVG_FETCH_ERROR, ex.errorCode)
@@ -118,9 +118,9 @@ class NetworkManagerTest {
 
         val manager = NetworkManager(traceId, mockClient)
 
-        val result = manager.fetchSvgAsText(testUrl)
+        val result = manager.fetch(testUrl)
 
         assertNotNull(result)
-        assertEquals(svgContent, result)
+        assertEquals(svgContent, result.body)
     }
 }

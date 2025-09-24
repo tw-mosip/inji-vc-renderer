@@ -48,11 +48,16 @@ kotlin {
         val jvmMain by getting{
             dependencies {
                 implementation(libs.pixelpass.jar)
+                implementation(libs.batik.transcoder)
+                implementation(libs.fop)
+                implementation(libs.pdfbox)
             }
         }
         val androidMain by getting {
             dependencies {
                 implementation(libs.pixelpass.aar)
+                implementation(libs.androidsvg.aar)
+                implementation(libs.pdfbox.android)
             }
         }
         val jvmTest by getting

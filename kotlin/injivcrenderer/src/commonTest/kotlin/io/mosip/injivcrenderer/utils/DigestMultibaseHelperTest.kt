@@ -7,10 +7,10 @@ import kotlin.test.assertFailsWith
 import io.mosip.injivcrenderer.TestUtils
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 
-class UtilsTest {
+class DigestMultibaseHelperTest {
 
     private val traceId = "test-trace-id"
-    private val helper = Utils(traceId)
+    private val helper = DigestMultibaseHelper(traceId)
     private val svgSample = """<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>"""
 
     @Test

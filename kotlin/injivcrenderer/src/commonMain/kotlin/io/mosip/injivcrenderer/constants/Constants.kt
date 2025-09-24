@@ -23,5 +23,9 @@ object Constants {
 
     const val SHA_256 = "SHA-256"
 
+    const val PAGE = "page"
+    const val PAGESET = "pageSet"
+    const val SVG = "svg"
+
 
 }
