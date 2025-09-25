@@ -10,17 +10,15 @@ class JsonPointerResolver(private val traceabilityId: String) {
     private val className = JsonPointerResolver::class.simpleName
 
     /**
-     * Replaces placeholders in an SVG template using a Verifiable Credential JSON for values and Wellknown for labels.
+     * Replaces placeholders in an SVG template using a Verifiable Credential JSON for values.
      * @param svgTemplate The SVG template containing placeholders in the format {{/json/pointer}} or {{}}
      * @param jsonNode The root JsonNode of the Verifiable Credential or WellKnown Json
      * @param renderProperties Optional list of allowed JSON pointer paths; others will be replaced with "-"
-     * @param isLabelPlaceholder If true, leaves label placeholders ({{}}) unchanged; otherwise replaces with "-"
      */
     fun replacePlaceholders(
         svgTemplate: String,
         jsonNode: JsonNode,
-        renderProperties: List<String>? = null,
-        isLabelPlaceholder: Boolean = false
+        renderProperties: List<String>? = null
     ): String {
         return PLACEHOLDER_REGEX.replace(svgTemplate) { match ->
             val pointerPath = match.groups[1]?.value ?: ""
@@ -38,38 +36,15 @@ class JsonPointerResolver(private val traceabilityId: String) {
             }
 
             when {
-                valueNode == null || valueNode.isNull -> {
-                    when {
-                        isLabelPlaceholder && pointerPath.startsWith(FALLBACK_PATH) -> extractFieldName(pointerPath)
-                        isLabelPlaceholder -> match.value
-                        else -> "-"
-                    }
-                }
+                valueNode == null || valueNode.isNull -> "-"
                 valueNode.isValueNode -> valueNode.asText()
                 else -> valueNode.toString()
             }
         }
     }
 
-    private fun extractFieldName(pointerPath: String): String {
-        val raw = pointerPath
-            .removePrefix(FALLBACK_PATH)
-            .substringBefore("/")
-
-        return raw
-            .replace(Regex("\\[\\d+\\]"), "")
-            .replace(Regex("([a-z])([A-Z])"), "$1 $2")
-            .replace(Regex("([A-Z])([A-Z][a-z])"), "$1 $2")
-            .split(Regex("[_\\s]+"))
-            .filter { it.isNotBlank() }
-            .joinToString(" ") { word ->
-                word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-            }
-    }
-
 
     companion object {
         private val PLACEHOLDER_REGEX = Regex("\\{\\{(/[^}]*)\\}\\}|\\{\\{\\}\\}")
-        private const val FALLBACK_PATH = "/credential_definition/credentialSubject/"
     }
 }

@@ -29,7 +29,6 @@ sequenceDiagram
     Renderer_Lib ->> Pixelpass: Generate QR code image if template has `/qrCodeImage`
     Pixelpass -->> Renderer_Lib: Return base64 string of QR code image
     Renderer_Lib ->> Renderer_Lib: Replace QR placeholder with base64 string
-    Renderer_Lib ->> Renderer_Lib: Replace label placeholders with wellknown JSON
     Renderer_Lib ->> Renderer_Lib: Replace value placeholders with VC JSON
 
 
@@ -58,7 +57,7 @@ InjiVcRenderer.renderVC(
 ): listOfSVGs
 
 - credentialFormat: It is the format of the credential. Only for ldp_vc is supported.
-- wellknownJsonString: It is the wellknown JSON data which has label values to be replaced in the template.
+- wellknownJsonString: It is the wellknown JSON data. Optional field.
 - vcJsonString: It is the Verifiable Credential JSON data which has claim values to be replaced in the template.
 Returns: It returns the list of rendered SVGs with all placeholders replaced.
 ````
@@ -89,25 +88,20 @@ The library fetches the SVG template based on the mediaType and validates its in
 - If the template contains a `{{/qrCodeImage}}` placeholder but the QR code generation fails, it replaces the placeholder with an fallback image.
 - Note : It is mandatory to have <image id= "qrCodeImage" .../> tag in the SVG template for the QR code replacement to work.
 
-##### 10. Wellknown replacement logic
-- If the placeholder for label is present in the SVG Template and concern path is not available in well-known or well-known itself not available, it will check for `{{/credential_definition/credentialSubject/fullName}}` in the placeholder and takes the field next to `/credential_definition/credentialSubject` as the fallback value to replace it.
-- For example: `{{/credential_definition/credentialSubject/fullName}}` will be replaced to `Full Name`(Title Case).
-- If wellknown JSON is present, it replaces the label placeholders in the template with corresponding values from the wellknown JSON.
-
-##### 11. VC replacement logic
+##### 10. VC replacement logic
 - If replacement for the VC Json placeholders are not found in the VC JSON, it falls back to `-`.
 - If replacement for the VC Json placeholders are found in the VC JSON, it replaces them with the corresponding values from the VC JSON.
 
-##### 12. Return rendered SVGs to Wallet
+##### 11. Return rendered SVGs to Wallet
 - The library returns a list of processed SVGs with all placeholders replaced.
 
-##### 13. Render SVGs in Wallet
+##### 12. Render SVGs in Wallet
 - The Wallet renders these SVGs to display the detailed VC view to the user.
 
-##### 14. User wants to Export as PDF
+##### 13. User wants to Export as PDF
 The User taps on Export as PDF in the Wallet.
 
-##### 15. Call convertSvgToPdf API
+##### 14. Call convertSvgToPdf API
 The Wallet calls the InjiVcRenderer library’s convertSvgToPdf(listOfSVGs) API with the rendered SVG list.
 ````
 InjiVcRenderer.convertSvgToPdf(
@@ -117,11 +111,11 @@ InjiVcRenderer.convertSvgToPdf(
 - Returns: It returns the base64 string of the generated PDF.
 ````
 
-##### 16. Convert SVGs to PDF
+##### 15. Convert SVGs to PDF
 The library converts each SVG into a PDF page, merges them into a document, and encodes the PDF into a base64 string.
 
-##### 17. Return PDF to Wallet
+##### 16. Return PDF to Wallet
 - The library returns the base64-encoded PDF to the Wallet.
 
-##### 18. Render or Share PDF
+##### 17. Render or Share PDF
 - The Wallet can then either display the PDF for preview or share it with other applications.
