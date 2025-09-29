@@ -100,8 +100,7 @@ io.mosip.injivcrenderer/commonMain
 5. SvgFetchException is thrown if fetching SVG from the URL fails
 6. InvalidRenderMethodException is thrown if render method object is invalid
 7. MultibaseValidationException is thrown if digestMultibase validation fails
-8. PageSetParsingException is thrown if parsing pageSet fails in Svg to Pdf conversion
-9. UnsupportedCredentialFormat is thrown if unsupported credential format is passed to the renderVC method
+8. UnsupportedCredentialFormat is thrown if unsupported credential format is passed to the renderVC method
 
 
 ### Steps involved in SVG Template to SVG Image Conversion
@@ -132,27 +131,9 @@ For each item in the renderMethodArray, the library validates the `renderSuite` 
 
 #### Fetching the Template
 - Fetches the SVG Template from the URL provided in the `id` field of the `template` object in the render method.
-- `mediaType` field in renderMethod should be `image/svg+xml` or `application/xml`.
+- `mediaType` field in renderMethod should be `image/svg+xml`.
 - `image/svg+xml` is used when the URL directly points to SVG Template.
-- `application/xml` is used when the URL points to XML document which has multiple SVG Templates in `<pageSet>` tag.
 - Validates the `Content-Type` header in the response while downloading Template from the URL.
-
-##### application/xml
-- If Content-Type is `application/xml`, it will check for the root element of the response to be `<pageSet>`.
-- If root element is `<pageSet>`, it will parse the `<pageSet>` and extract the SVG Template from the `<page>` tag.
-- Example:
-    ```
-    <pageSet>
-        <page>
-            <svg>...</svg>
-        </page>
-        <page>
-            <svg>...</svg>
-        </page>
-    </pageSet>
-    ```
-- If multiple `<page>` tags are present in the `<pageSet>`, it will extract all the SVG Templates from the `<page>` tags and return the list of replaced SVG Templates.
-- Note: Tags are case sensitive and it should be exactly `<pageSet>` and `<page>`.
 
 ##### image/svg+xml
 - If Content-Type is `image/svg+xml`, it will consider the entire response as SVG Template.
@@ -160,7 +141,7 @@ For each item in the renderMethodArray, the library validates the `renderSuite` 
     ```
     <svg>...</svg>
     ```
-- If Content-Type is not `image/svg+xml` or `application/xml`, it will throw `SvgFetchException`.
+- If Content-Type is not of type `image/svg+xml` , it will throw `SvgFetchException`.
 
 
 
@@ -196,20 +177,6 @@ For each item in the renderMethodArray, the library validates the `renderSuite` 
         //result => <svg><image id = "qrCodeImage" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABmJLR0QA/wD/AP+gvaeTAAAIKklEQVR4nO3de5QdZZnv8e9M7MzMzM7szszM7s"
 - If the template contains a `{{/qrCodeImage}}` placeholder but the QR code generation fails, it replaces the placeholder with an fallback image.
 - Note : It is mandatory to have <image id= "qrCodeImage" .../> tag in the SVG template for the QR code replacement to work. Because if it is fallback scenario, `<image>` id will be replaced with `qrCodeFallbackImage` which can be used to identify from consumer side if design have valid QR code or fallback one.
-
-##### Wellknown fallback handling
-- If placeholder for label is present in the SVG Template and concern path is not available in well-known or well-known itself not available, it will check for `/credential_definition/credentialSubject` in th placeholder and takes the path next to that as the value to replace it.
-- Example:
-    ```
-    //Well-known is not available
-    val vcJsonString = """{      "credentialSubject": { "fullName": "Tester", "city": [{"value": "TestCITY", "language": "eng"},{"value": "VilleTest", "language": "fr"}]}"""
-          
-      val svgTempalte = "<svg>{{/credential_definition/credentialSubject/fullName}} - {{/credentialSubject/fullName/0/value}}</svg>"
-          
-      //result => <svg>Full Name - Tester</svg>
-  ```
-Note: camelCase, PascalCase or snake_case value is converted to Title Case for the label. e.g. fullName or FullName or full_name is converted to Full Name.
-- After replacing the label placeholders, it will replace the rest of the placeholders in the SVG Template with actual VC Json Data.
 
 
 ##### Handling Render Property
@@ -271,4 +238,3 @@ Note: camelCase, PascalCase or snake_case value is converted to Title Case for t
 - [JSON Pointer Algorithm - RFC6901](https://www.rfc-editor.org/rfc/rfc6901)
 - [Draft Implementation of Verifiable Credential Rendering Methods](https://w3c-ccg.github.io/vc-render-method/#the-rendermethod-property)
 - [Data model 2.0 implementation](https://www.w3.org/TR/vc-data-model-2.0/#reserved-extension-points)
-- [Multiple Pages](https://www.w3.org/TR/2004/WD-SVG12-20041027/multipage.html)
