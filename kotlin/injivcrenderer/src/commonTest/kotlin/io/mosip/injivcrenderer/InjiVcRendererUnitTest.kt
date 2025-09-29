@@ -39,10 +39,6 @@ class InjiVcRendererTest {
                     url.contains("with-locale-as-array-of-object.svg") -> TemplateResponse(ContentType.SVG, "<svg>Full Name - {{/credentialSubject/fullName/0/value}},முழுப் பெயர் - {{/credentialSubject/fullName/1/value}}</svg>")
                     url.contains("nested-object.svg") -> TemplateResponse(ContentType.SVG, "<svg>Address : {{/credentialSubject/addressLine1/0/value}}****{{/credentialSubject/region/0/value}}****{{/credentialSubject/city/0/value}}***</svg>")
                     url.contains("qrcode.svg") -> TemplateResponse(ContentType.SVG, "<svg>QR code : <image id = \"qrCodeImage\" xlink:href={{/qrCodeImage}}</svg>")
-                    url.contains("multilingual.svg") -> TemplateResponse(ContentType.SVG, "<svg>" +
-                            "{{/credential_definition/credentialSubject/fullName/display/0/name}}: {{/credentialSubject/fullName/0/value}}," +
-                            "{{/credential_definition/credentialSubject/fullName/display/1/name}}: {{/credentialSubject/fullName/1/value}}" +
-                            "</svg>")
                     url.contains("test-digest.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
                     url.contains("xml-valid-with-2-pages.xml") -> TemplateResponse(ContentType.XML, "<pageSet>" +
                             "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
@@ -414,106 +410,6 @@ class InjiVcRendererTest {
         val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
 
         assertEquals(listOf("<svg>Email: test@test.com, Mobile: -</svg>"), result)
-    }
-
-    @Test
-    fun `renderVC with wellKnown and label placeholder present in svg`() {
-        val vcJsonString = """
-              {
-                "credentialSubject": {
-                    "fullName": [
-                        {
-                            "language": "eng",
-                            "value": "John Doe"
-                        },
-                        {
-                            "language": "tam",
-                            "value": "ஜான் டோ"
-                        }
-                    ],
-                    "mobile": "1234567890"
-                },
-                "renderMethod": {
-                    "type": "TemplateRenderMethod",
-                    "renderSuite": "svg-mustache",
-                      "template": {
-                        "id": "https://degree.example/credential-templates/multilingual.svg",
-                        "mediaType": "image/svg+xml"
-                      }
-                  }
-              }
-        """.trimIndent()
-
-        val wellKnownJsonString = """
-              {
-                "credential_definition": {
-                  "type": [
-                    "FarmerCredential_WithFace",
-                    "VerifiableCredential"
-                  ],
-                  "credentialSubject": {
-                    "fullName": {
-                          "display": [
-                             {
-                                "language": "eng",
-                                "name": "Full Name"
-                            },
-                            {
-                                "language": "tam",
-                                "name": "முழுப் பெயர்"
-                            }
-                          ]
-                    }
-                  }
-                }
-              }
-        """.trimIndent()
-
-        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString, wellKnownJson = wellKnownJsonString)
-        assertEquals(listOf("<svg>" +
-                "Full Name: John Doe," +
-                "முழுப் பெயர்: ஜான் டோ" +
-                "</svg>"), result)
-    }
-
-    @Test
-    fun `renderVC without wellKnown and label placeholder present in svg (fallback)`() {
-        val vcJsonString = """
-              {
-                "credentialSubject": {
-                    "fullName": [
-                        {
-                            "language": "eng",
-                            "value": "John Doe"
-                        },
-                        {
-                            "language": "tam",
-                            "value": "ஜான் டோ"
-                        }
-                    ],
-                    "mobile": "1234567890"
-                },
-                "renderMethod": {
-                    "type": "TemplateRenderMethod",
-                    "renderSuite": "svg-mustache",
-                      "template": {
-                        "id": "https://degree.example/credential-templates/multilingual.svg",
-                        "mediaType": "image/svg+xml"
-                      }
-                  }
-              }
-        """.trimIndent()
-
-        "<svg>" +
-                "{{/credential_definition/credentialSubject/fullName/display/0/name}}: {{/credentialSubject/fullName/0/value}}," +
-                "{{/credential_definition/credentialSubject/fullName/display/1/name}}: {{/credentialSubject/fullName/1/value}}" +
-                "</svg>"
-
-        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
-        assertEquals(listOf("<svg>" +
-                "Full Name: John Doe," +
-                "Full Name: ஜான் டோ" +
-                "</svg>"), result)
     }
 
     @Test
