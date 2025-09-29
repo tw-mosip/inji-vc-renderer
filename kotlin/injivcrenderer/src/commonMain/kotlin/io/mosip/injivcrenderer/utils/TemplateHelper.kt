@@ -35,6 +35,7 @@ class TemplateHelper(private val traceabilityId: String) {
 
     }
 
+    /*** If contentType is application/xml, extract SVGs from the pageSet, else return the body as a single-item list ***/
     private fun extractSVGList(templateResponse: TemplateResponse): List<String> =
         if (templateResponse.isXmlTemplate()) {
             XMLHelper(traceabilityId).getSVGListFromPageSet(templateResponse.body)

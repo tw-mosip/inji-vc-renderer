@@ -21,7 +21,7 @@ class InjiVcRenderer(private val traceabilityId: String) {
      * Replaces placeholders in the templates with values from the VC JSON.
      *
      * @param credentialFormat The format of the credential. Currently only LDP_VC is supported.
-     * @param wellKnownJson Optional well-known JSON for additional placeholders for labels.
+     * @param wellKnownJson Optional well-known JSON.
      * @param vcJsonString The Verifiable Credential as a JSON string.
      * @return A list of rendered SVG strings.
      */
@@ -44,7 +44,7 @@ class InjiVcRenderer(private val traceabilityId: String) {
 
         return renderMethodArray.flatMap { renderMethodElement ->
             templateHelper.extractSVG(renderMethodElement).map { rawSvg ->
-                placeholderReplacementHelper.replaceSvgPlaceholders(rawSvg, vcJsonNode, renderMethodElement, wellKnownJson, vcJsonString)
+                placeholderReplacementHelper.replaceSvgPlaceholders(rawSvg, vcJsonNode, renderMethodElement, vcJsonString)
             }
         }
     }
