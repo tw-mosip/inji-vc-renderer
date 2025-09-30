@@ -26,6 +26,14 @@ class TemplateHelper(private val traceabilityId: String) {
 
         val templateResponse = NetworkManager(traceabilityId).fetch(templateId)
 
+        if (templateResponse.body.isEmpty()) {
+            throw VcRendererExceptions.SvgFetchException(
+                traceabilityId,
+                this::class.simpleName,
+                "Empty response body"
+            )
+        }
+
         if (digestMultibase != null && !DigestMultibaseHelper(traceabilityId).validateDigestMultibase(templateResponse.body, digestMultibase)) {
             throw VcRendererExceptions.MultibaseValidationException(
                 traceabilityId = traceabilityId,

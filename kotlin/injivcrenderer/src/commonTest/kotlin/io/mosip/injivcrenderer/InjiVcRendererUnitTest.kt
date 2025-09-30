@@ -6,6 +6,7 @@ import io.mosip.injivcrenderer.constants.Constants.TEMPLATE_RENDER_METHOD
 import io.mosip.injivcrenderer.constants.ContentType
 import io.mosip.injivcrenderer.constants.CredentialFormat
 import io.mosip.injivcrenderer.constants.VcRendererErrorCodes
+import io.mosip.injivcrenderer.constants.VcRendererErrorCodes.SVG_FETCH_ERROR
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 import io.mosip.injivcrenderer.networkManager.NetworkManager
 import io.mosip.injivcrenderer.networkManager.TemplateResponse
@@ -33,6 +34,7 @@ class InjiVcRendererTest {
             whenever(mock.fetch(any())).thenAnswer { invocation ->
                 val url = invocation.arguments[0] as String
                 when {
+                    url.contains("empty-response") -> TemplateResponse(ContentType.SVG, "")
                     url.contains("normal.svg") -> TemplateResponse(ContentType.SVG, "<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>")
                     url.contains("arrays.svg") -> TemplateResponse(ContentType.SVG, "<svg>Benefits: {{/credentialSubject/benefits/0}}, {{/credentialSubject/benefits/1}}</svg>")
                     url.contains("with-locale-object.svg") -> TemplateResponse(ContentType.SVG, "<svg>Full Name - {{/credentialSubject/fullName/en}},முழுப் பெயர் - {{/credentialSubject/fullName/tam}}</svg>")
@@ -748,6 +750,29 @@ class InjiVcRendererTest {
             }
         assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
         assertTrue(actualException.message!!.contains("does not contain a <svg> element"))
+
+    }
+
+    @Test
+    fun `test empty response - from network call`() {
+        val vcJsonString = """{
+            "renderMethod": {
+                    "type": "TemplateRenderMethod",
+                    "renderSuite": "svg-mustache",
+                      "template": {
+                        "id": "empty-response.svg",
+                        "mediaType": "image/svg+xml"
+                      }
+                  }
+              }
+        }"""
+
+        val actualException =
+            assertFailsWith<VcRendererExceptions.SvgFetchException> {
+                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+            }
+        kotlin.test.assertEquals(SVG_FETCH_ERROR, actualException.errorCode)
+        assert(actualException.message!!.contains("Empty response body"))
 
     }
 
