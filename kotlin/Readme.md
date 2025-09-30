@@ -80,8 +80,7 @@ io.mosip.injivcrenderer/commonMain
 │   ├── JsonPointerResolver.kt  # Json Pointer Algorithm implementation
 │   └── SvgToPdfConvertor.kt # Svg to Pdf conversion utility   
 │── utils/ - # Helpers and utility classes        
-│   ├── DigestMutlibaseHelper.kt  
-│   ├── PlaceholderReplacementHelper.kt 
+│   ├── DigestMutlibaseHelper.kt
 │   ├── RenderMethodHelper.kt  
 │   ├── TemplateHelper.kt  
 │   └── XMLHelper.kt    

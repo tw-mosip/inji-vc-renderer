@@ -3,8 +3,8 @@ package io.mosip.injivcrenderer
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.mosip.injivcrenderer.constants.CredentialFormat
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
+import io.mosip.injivcrenderer.templateEngine.svg.JsonPointerResolver
 import io.mosip.injivcrenderer.templateEngine.svg.svgListToPdfBase64
-import io.mosip.injivcrenderer.utils.PlaceholderReplacementHelper
 import io.mosip.injivcrenderer.utils.RenderMethodHelper
 import io.mosip.injivcrenderer.utils.TemplateHelper
 
@@ -13,7 +13,7 @@ class InjiVcRenderer(private val traceabilityId: String) {
     private val mapper = ObjectMapper()
     private val templateHelper = TemplateHelper(traceabilityId)
     private val renderMethodHelper = RenderMethodHelper(traceabilityId)
-    private val placeholderReplacementHelper = PlaceholderReplacementHelper(traceabilityId)
+    private val jsonPointerResolver = JsonPointerResolver(traceabilityId)
 
     /**
      * Renders SVG templates defined in the VC's renderMethod section.
@@ -44,7 +44,7 @@ class InjiVcRenderer(private val traceabilityId: String) {
 
         return renderMethodArray.flatMap { renderMethodElement ->
             templateHelper.extractSVG(renderMethodElement).map { rawSvg ->
-                placeholderReplacementHelper.replaceSvgPlaceholders(rawSvg, vcJsonNode, renderMethodElement, vcJsonString)
+                jsonPointerResolver.replaceSvgPlaceholders(rawSvg, vcJsonNode, renderMethodElement, vcJsonString)
             }
         }
     }
