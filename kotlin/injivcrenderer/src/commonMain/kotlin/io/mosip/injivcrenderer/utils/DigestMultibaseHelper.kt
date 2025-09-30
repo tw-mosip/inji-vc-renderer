@@ -26,11 +26,7 @@ class DigestMultibaseHelper(private val traceabilityId: String) {
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    private fun base64UrlNoPadDecode(input: String): ByteArray {
-        val standardBase64 = input
-            .replace('-', '+')
-            .replace('_', '/')
-            .padEnd(input.length + (4 - input.length % 4) % 4, '=')
-        return Base64.decode(standardBase64)
+    fun base64UrlNoPadDecode(input: String): ByteArray {
+        return Base64.UrlSafe.decode(input)
     }
 }

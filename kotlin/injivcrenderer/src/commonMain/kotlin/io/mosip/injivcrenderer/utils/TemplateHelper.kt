@@ -12,9 +12,11 @@ class TemplateHelper(private val traceabilityId: String) {
 
     private val className = TemplateHelper::class.simpleName
 
+    private val renderMethodHelper = RenderMethodHelper(traceabilityId)
+
     fun extractSVG(renderMethod: JsonNode): List<String> {
-        RenderMethodHelper(traceabilityId).validateSvgMustacheRenderSuite(renderMethod)
-        RenderMethodHelper(traceabilityId).validateTemplateRenderMethodType(renderMethod)
+        renderMethodHelper.validateSvgMustacheRenderSuite(renderMethod)
+        renderMethodHelper.validateTemplateRenderMethodType(renderMethod)
 
         val templateValue = renderMethod.path(TEMPLATE)
 
