@@ -5,14 +5,12 @@ import io.mosip.injivcrenderer.constants.CredentialFormat
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 import io.mosip.injivcrenderer.templateEngine.svg.JsonPointerResolver
 import io.mosip.injivcrenderer.templateEngine.svg.svgListToPdfBase64
-import io.mosip.injivcrenderer.utils.RenderMethodHelper
 import io.mosip.injivcrenderer.utils.TemplateHelper
 
 class InjiVcRenderer(private val traceabilityId: String) {
 
     private val mapper = ObjectMapper()
     private val templateHelper = TemplateHelper(traceabilityId)
-    private val renderMethodHelper = RenderMethodHelper(traceabilityId)
     private val jsonPointerResolver = JsonPointerResolver(traceabilityId)
 
     /**
@@ -40,7 +38,7 @@ class InjiVcRenderer(private val traceabilityId: String) {
         }
 
         val vcJsonNode = mapper.readTree(vcJsonString)
-        val renderMethodArray = renderMethodHelper.parseRenderMethod(vcJsonNode)
+        val renderMethodArray = templateHelper.parseRenderMethod(vcJsonNode)
 
         return renderMethodArray.flatMap { renderMethodElement ->
             templateHelper.extractSVG(renderMethodElement).map { rawSvg ->
