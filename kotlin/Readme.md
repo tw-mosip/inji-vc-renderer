@@ -79,9 +79,7 @@ io.mosip.injivcrenderer/commonMain
 │── templateEngine/svg//          
 │   ├── JsonPointerResolver.kt  # Json Pointer Algorithm implementation
 │   └── SvgToPdfConvertor.kt # Svg to Pdf conversion utility   
-│── utils/ - # Helpers and utility classes        
-│   ├── DigestMutlibaseHelper.kt
-│   ├── RenderMethodHelper.kt  
+│── utils/ - # Helpers and utility classes      
 │   ├── TemplateHelper.kt  
 │   └── XMLHelper.kt    
 ```
