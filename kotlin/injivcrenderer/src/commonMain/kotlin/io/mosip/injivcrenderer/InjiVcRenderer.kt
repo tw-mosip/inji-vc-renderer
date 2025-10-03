@@ -24,7 +24,7 @@ class InjiVcRenderer(private val traceabilityId: String) {
      * @return A list of rendered SVG strings.
      */
     @JvmOverloads
-    fun renderVC(
+    fun generateCredentialDisplayContent(
         credentialFormat: CredentialFormat,
         wellKnownJson: String? = null,
         vcJsonString: String

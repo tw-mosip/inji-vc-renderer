@@ -23,7 +23,7 @@
        - Run Tests using `./gradlew testDebugUnitTest` or `./gradlew testReleaseUnitTest` based on the build type.
 
 ### API
-- `renderVC(credentialFormat: CredentialFormat, wellknownJsonString: String? = null, vcJsonString: String)` - expects the Verifiable Credential, Well-known Json and Credential Format as input and returns the list of replaced SVG Templates.
+- `generateCredentialDisplayContent(credentialFormat: CredentialFormat, wellknownJsonString: String? = null, vcJsonString: String)` - expects the Verifiable Credential, Well-known Json and Credential Format as input and returns the list of replaced SVG Templates.
     - `credentialFormat` - Enum to specify the credential format. Currently only LDP_VC format is supported.
     - `wellknownJsonString` - Well-known Json downloaded in stringified format. It is optional parameter.
     - `vcJsonString` - VC Downloaded in stringified format.
@@ -93,7 +93,7 @@ io.mosip.injivcrenderer/commonMain
 5. SvgFetchException is thrown if fetching SVG from the URL fails
 6. InvalidRenderMethodException is thrown if render method object is invalid
 7. MultibaseValidationException is thrown if digestMultibase validation fails
-8. UnsupportedCredentialFormat is thrown if unsupported credential format is passed to the renderVC method
+8. UnsupportedCredentialFormat is thrown if unsupported credential format is passed to the generateCredentialDisplayContent method
 
 
 ### Steps involved in SVG Template to SVG Image Conversion

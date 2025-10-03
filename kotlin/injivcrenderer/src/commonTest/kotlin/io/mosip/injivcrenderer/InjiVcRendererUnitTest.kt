@@ -85,7 +85,7 @@ class InjiVcRendererTest {
                   }
               }
         }"""
-        val result = injivcRenderer.renderVC(credentialFormat = supportedFormat, vcJsonString = vcJsonString)
+        val result = injivcRenderer.generateCredentialDisplayContent(credentialFormat = supportedFormat, vcJsonString = vcJsonString)
         assertEquals(
             listOf(
                 "<svg>Email: test@test.com, Mobile: 1234567890</svg>"), result)
@@ -95,12 +95,12 @@ class InjiVcRendererTest {
 
 
     @Test
-    fun `renderVC handles invalid JSON input`() {
+    fun `generateCredentialDisplayContent handles invalid JSON input`() {
         val vcJsonString = """{ "renderMethod": [ "invalid" ] }"""
 
         val actualException =
             assertFailsWith<VcRendererExceptions.InvalidRenderMethodException> {
-                injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "RenderMethod object is invalid"
 
@@ -110,7 +110,7 @@ class InjiVcRendererTest {
 
 
     @Test
-    fun `renderVC handles without renderMethod field`() {
+    fun `generateCredentialDisplayContent handles without renderMethod field`() {
         val vcJsonString = """
             {
                 "someField": "someValue"
@@ -119,7 +119,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.InvalidRenderMethodException> {
-                injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "RenderMethod object is invalid"
 
@@ -128,7 +128,7 @@ class InjiVcRendererTest {
     }
 
     @Test
-    fun `renderVC handles with renderMethod field as empty object`() {
+    fun `generateCredentialDisplayContent handles with renderMethod field as empty object`() {
         val vcJsonString = """
               { "renderMethod": {
                 }
@@ -137,7 +137,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.InvalidRenderMethodException> {
-                injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "RenderMethod object is invalid"
 
@@ -146,7 +146,7 @@ class InjiVcRendererTest {
     }
 
     @Test
-    fun `renderVC handles with renderMethod field as empty array`() {
+    fun `generateCredentialDisplayContent handles with renderMethod field as empty array`() {
         val vcJsonString = """
               {
                 "renderMethod": [
@@ -156,7 +156,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.InvalidRenderMethodException> {
-                injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "RenderMethod object is invalid"
 
@@ -167,7 +167,7 @@ class InjiVcRendererTest {
 
 
     @Test
-    fun `renderVC handles with renderMethod as array - renderSuite is invalid`() {
+    fun `generateCredentialDisplayContent handles with renderMethod as array - renderSuite is invalid`() {
         val vcJsonString = """
               {
                 "renderMethod": [
@@ -178,7 +178,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.InvalidRenderSuiteException> {
-                injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "Render suite must be '$SVG_MUSTACHE'"
 
@@ -187,7 +187,7 @@ class InjiVcRendererTest {
     }
 
     @Test
-    fun `renderVC handles with renderMethod as array - type is invalid`() {
+    fun `generateCredentialDisplayContent handles with renderMethod as array - type is invalid`() {
         val vcJsonString = """
               {
                 "renderMethod": [
@@ -197,7 +197,7 @@ class InjiVcRendererTest {
         """.trimIndent()
         val actualException =
             assertFailsWith<VcRendererExceptions.InvalidRenderMethodTypeException> {
-                injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "Render method type must be '$TEMPLATE_RENDER_METHOD'"
 
@@ -206,7 +206,7 @@ class InjiVcRendererTest {
     }
 
     @Test
-    fun `renderVC handles with renderMethod as json - renderSuite is invalid`() {
+    fun `generateCredentialDisplayContent handles with renderMethod as json - renderSuite is invalid`() {
         val vcJsonString = """
               {
                 "renderMethod": { "type": "TemplateRenderMethod", "renderSuite": "invalid-suite" }
@@ -215,7 +215,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.InvalidRenderSuiteException> {
-                injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "Render suite must be '$SVG_MUSTACHE'"
 
@@ -224,7 +224,7 @@ class InjiVcRendererTest {
     }
 
     @Test
-    fun `renderVC handles with renderMethod as json - type is invalid`() {
+    fun `generateCredentialDisplayContent handles with renderMethod as json - type is invalid`() {
         val vcJsonString = """
               {
                 "renderMethod": { "type": "invalid", "renderSuite": "svg-mustache" }
@@ -233,7 +233,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.InvalidRenderMethodTypeException> {
-                injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "Render method type must be '$TEMPLATE_RENDER_METHOD'"
 
@@ -289,7 +289,7 @@ class InjiVcRendererTest {
                   }
               }
         }"""
-        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        val result = injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
         assertEquals(
             listOf(
             "<svg>Address : TEST_ADDRESS_LINE_1eng****TEST_REGIONeng****TEST_CITYeng***</svg>"), result)
@@ -299,7 +299,7 @@ class InjiVcRendererTest {
 
 
     @Test
-    fun `renderVC handles with renderMethod field as object - SVG Hosted`() {
+    fun `generateCredentialDisplayContent handles with renderMethod field as object - SVG Hosted`() {
         val vcJsonString = """
               {
                 "credentialSubject": {
@@ -317,13 +317,13 @@ class InjiVcRendererTest {
               }
         """.trimIndent()
 
-        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        val result = injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
 
         assertEquals(listOf("<svg>Email: test@gmail.com, Mobile: 1234567890</svg>"), result)
     }
 
     @Test
-    fun `renderVC handles with renderMethod field as array - Multiple SVG Hosted`() {
+    fun `generateCredentialDisplayContent handles with renderMethod field as array - Multiple SVG Hosted`() {
         val vcJsonString = """
               {
                 "credentialSubject": {
@@ -355,13 +355,13 @@ class InjiVcRendererTest {
               }
         """.trimIndent()
 
-        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        val result = injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
 
         assertEquals(listOf("<svg>Email: test@gmail.com, Mobile: John Doe</svg>", "<svg>Full Name - John Doe,முழுப் பெயர் - ஜான் டோ</svg>"), result)
     }
 
     @Test
-    fun `renderVC with renderProperty - Hosted one SVG`() {
+    fun `generateCredentialDisplayContent with renderProperty - Hosted one SVG`() {
         val vcJsonString = """
               {
                 "issuer": "Example University",
@@ -385,13 +385,13 @@ class InjiVcRendererTest {
               }
         """.trimIndent()
 
-        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        val result = injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
 
         assertEquals(listOf("<svg>Email: test@test.com, Mobile: -</svg>"), result)
     }
 
     @Test
-    fun `renderVC missing template id`() {
+    fun `generateCredentialDisplayContent missing template id`() {
         val vcJsonString = """ {
                 "credentialSubject": {
                     "fullName": [
@@ -418,7 +418,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.MissingTemplateIdException> {
-                injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "Template ID is missing in renderMethod"
 
@@ -452,13 +452,13 @@ class InjiVcRendererTest {
                   }
               }"""
 
-        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        val result = injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
         assertEquals(result.contains("{{/qrCodeImage}}"), false)
 
     }
 
     @Test
-    fun `renderVC injects fallback QR when generation fails`() {
+    fun `generateCredentialDisplayContent injects fallback QR when generation fails`() {
         mockConstruction(QrCodeGenerator::class.java) { mock, _ ->
             whenever(mock.generateQRCodeImage(any())).thenThrow(RuntimeException("QR failed"))
         }.use {
@@ -474,7 +474,7 @@ class InjiVcRendererTest {
           }
         }"""
 
-            val result = injivcRenderer.renderVC(
+            val result = injivcRenderer.generateCredentialDisplayContent(
                 CredentialFormat.LDP_VC,
                 vcJsonString = vcJsonString
             ).first() as String
@@ -488,7 +488,7 @@ class InjiVcRendererTest {
     }
 
     @Test
-    fun `renderVC injects fallback QR when generator returns empty string`() {
+    fun `generateCredentialDisplayContent injects fallback QR when generator returns empty string`() {
         mockConstruction(QrCodeGenerator::class.java) { mock, _ ->
             whenever(mock.generateQRCodeImage(any())).thenReturn("")
         }.use {
@@ -504,7 +504,7 @@ class InjiVcRendererTest {
           }
         }"""
 
-            val result = injivcRenderer.renderVC(
+            val result = injivcRenderer.generateCredentialDisplayContent(
                 CredentialFormat.LDP_VC,
                 vcJsonString = vcJsonString
             ).first() as String
@@ -536,7 +536,7 @@ class InjiVcRendererTest {
                   }
               }
         }"""
-        val result = injivcRenderer.renderVC(credentialFormat = supportedFormat, vcJsonString = vcJsonString)
+        val result = injivcRenderer.generateCredentialDisplayContent(credentialFormat = supportedFormat, vcJsonString = vcJsonString)
         assertEquals(
             listOf(
                 "<svg>Email: test@test.com, Mobile: 1234567890</svg>"), result)
@@ -565,7 +565,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.MultibaseValidationException> {
-                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "Mismatch between fetched SVG and provided digestMultibase"
 
@@ -596,7 +596,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.MultibaseValidationException> {
-                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         val expectedErrorMessage = "Multibase validation failed: digestMultibase must start with 'u'"
 
@@ -622,7 +622,7 @@ class InjiVcRendererTest {
                   }
               }
         }"""
-        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        val result = injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
         "<pageSet>" +
                 "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
                 "<page><svg>Mobile: {{/credentialSubject/mobile}}</svg></page>" +
@@ -650,7 +650,7 @@ class InjiVcRendererTest {
                   }
               }
         }"""
-        val result = injivcRenderer.renderVC(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+        val result = injivcRenderer.generateCredentialDisplayContent(credentialFormat = CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
         "<pageSet>" +
                 "<page><svg>Email: {{/credentialSubject/email}}</svg></page>" +
                 "</pageSet>"
@@ -676,7 +676,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.PageSetParsingException> {
-                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
         assertTrue(actualException.message!!.contains("Root element must be <pageSet>"))
@@ -699,7 +699,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.PageSetParsingException> {
-                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
         assertTrue(actualException.message!!.contains("<pageSet> must contain at least one <page> element"))
@@ -722,7 +722,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.PageSetParsingException> {
-                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         assertEquals(VcRendererErrorCodes.XML_PARSING_FAILED, actualException.errorCode)
         assertTrue(actualException.message!!.contains("does not contain a <svg> element"))
@@ -745,7 +745,7 @@ class InjiVcRendererTest {
 
         val actualException =
             assertFailsWith<VcRendererExceptions.SvgFetchException> {
-                injivcRenderer.renderVC(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
+                injivcRenderer.generateCredentialDisplayContent(CredentialFormat.LDP_VC, vcJsonString = vcJsonString)
             }
         kotlin.test.assertEquals(SVG_FETCH_ERROR, actualException.errorCode)
         assert(actualException.message!!.contains("Empty response body"))
