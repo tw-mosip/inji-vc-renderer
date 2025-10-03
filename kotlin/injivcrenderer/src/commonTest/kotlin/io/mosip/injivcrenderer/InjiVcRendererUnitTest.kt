@@ -67,33 +67,9 @@ class InjiVcRendererTest {
     }
 
     @Test
-    fun `renderVC should throw UnsupportedCredentialFormat when format is not LDP_VC`() {
-        val unsupportedFormat = CredentialFormat.fromValue("mso_mdoc")
-
-        val vcJson = """
-            {
-              "credentialSubject": {
-                "fullName": "John Doe"
-              }
-            }
-        """.trimIndent()
-
-        val actualException =
-            assertFailsWith<VcRendererExceptions.UnsupportedCredentialFormat> {
-                injivcRenderer.renderVC(unsupportedFormat, vcJsonString = vcJson)
-            }
-        val expectedErrorMessage = "Only LDP_VC credential format is supported"
-
-        assertEquals(VcRendererErrorCodes.UNSUPPORTED_CREDENTIAL_FORMAT, actualException.errorCode)
-        assertEquals(expectedErrorMessage, actualException.message)
-        assertEquals("test-trace-id", actualException.traceabilityId)
-        assertEquals("InjiVcRenderer", actualException.className)
-    }
-
-    @Test
     fun `replace supported Format`() {
 
-        val supportedFormat = CredentialFormat.fromValue("ldp_vc")
+        val supportedFormat = CredentialFormat.fromValue("ldp_vc")!!
         val vcJsonString = """{
             "credentialSubject": {
                 "email": "test@test.com",
@@ -543,7 +519,7 @@ class InjiVcRendererTest {
     @Test
     fun `digestMultibase Valid`() {
 
-        val supportedFormat = CredentialFormat.fromValue("ldp_vc")
+        val supportedFormat = CredentialFormat.fromValue("ldp_vc")!!
         val vcJsonString = """{
             "credentialSubject": {
                 "email": "test@test.com",
