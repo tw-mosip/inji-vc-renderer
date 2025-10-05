@@ -1,6 +1,7 @@
 package io.mosip.injivcrenderer.utils
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.mosip.injivcrenderer.common.decodeFromBase64Url
 import io.mosip.injivcrenderer.constants.Constants.DIGEST_MULTIBASE
 import io.mosip.injivcrenderer.constants.Constants.ID
 import io.mosip.injivcrenderer.constants.Constants.RENDER_METHOD
@@ -14,8 +15,6 @@ import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
 import io.mosip.injivcrenderer.networkManager.NetworkManager
 import io.mosip.injivcrenderer.networkManager.TemplateResponse
 import java.security.MessageDigest
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 class TemplateHelper(private val traceabilityId: String) {
 
@@ -64,7 +63,7 @@ class TemplateHelper(private val traceabilityId: String) {
         if (!digestMultibase.startsWith("u")) throw VcRendererExceptions.MultibaseValidationException(traceabilityId, className, "digestMultibase must start with 'u'")
         val encodedPart = digestMultibase.substring(1)
 
-        val decoded = base64UrlNoPadDecode(encodedPart)
+        val decoded = decodeFromBase64Url(encodedPart)
         if (decoded.size != 34)
             throw VcRendererExceptions.MultibaseValidationException(traceabilityId, className, "Invalid multihash length")
         if (decoded[0] != 0x12.toByte() || decoded[1] != 0x20.toByte())
@@ -74,11 +73,6 @@ class TemplateHelper(private val traceabilityId: String) {
         val actualHash = MessageDigest.getInstance(SHA_256).digest(svgString.toByteArray(Charsets.UTF_8))
 
         return actualHash.contentEquals(expectedHash)
-    }
-
-    @OptIn(ExperimentalEncodingApi::class)
-    fun base64UrlNoPadDecode(input: String): ByteArray {
-        return Base64.UrlSafe.decode(input)
     }
 
     private fun isSvgMustacheRenderSuite(renderMethod: JsonNode): Boolean {

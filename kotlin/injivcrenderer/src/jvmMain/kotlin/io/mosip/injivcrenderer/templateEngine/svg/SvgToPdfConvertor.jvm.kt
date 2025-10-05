@@ -1,12 +1,12 @@
 package io.mosip.injivcrenderer.templateEngine.svg
 
-import org.apache.fop.svg.PDFTranscoder
+import io.mosip.injivcrenderer.common.encodeToBase64
 import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
+import org.apache.fop.svg.PDFTranscoder
 import org.apache.pdfbox.multipdf.PDFMergerUtility
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.util.Base64
 
 
 actual fun svgListToPdfBase64(svgList: List<String>): String {
@@ -32,7 +32,7 @@ actual fun svgListToPdfBase64(svgList: List<String>): String {
         tempPdfStreams.forEach { mergedPdf.addSource(it) }
         mergedPdf.mergeDocuments(null)
 
-        return Base64.getEncoder().encodeToString(finalOutput.toByteArray())
+        return encodeToBase64(finalOutput.toByteArray())
     } finally {
         tempPdfStreams.forEach { it.close() }
     }
