@@ -1,5 +1,5 @@
 # inji-vc-renderer
-This repository contains Kotlin and JS library to render VC with SVG template support.
+This repository contains Kotlin library to render VC with SVG template support.
 
 ### Kotlin
 - Kotlin directory has the library which generates aar and jar for VC Rendering.

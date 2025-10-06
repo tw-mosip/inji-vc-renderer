@@ -23,7 +23,7 @@
        - Run Tests using `./gradlew testDebugUnitTest` or `./gradlew testReleaseUnitTest` based on the build type.
 
 ### API
-- `renderVC(credentialFormat: CredentialFormat, wellknownJsonString: String? = null, vcJsonString: String)` - expects the Verifiable Credential, Well-known Json and Credential Format as input and returns the list of replaced SVG Templates.
+- `generateCredentialDisplayContent(credentialFormat: CredentialFormat, wellknownJsonString: String? = null, vcJsonString: String)` - expects the Verifiable Credential, Well-known Json and Credential Format as input and returns the list of replaced SVG Templates.
     - `credentialFormat` - Enum to specify the credential format. Currently only LDP_VC format is supported.
     - `wellknownJsonString` - Well-known Json downloaded in stringified format. It is optional parameter.
     - `vcJsonString` - VC Downloaded in stringified format.
@@ -36,10 +36,6 @@
         val vcJsonString = """{
             "credentialSubject": {
                 "fullName": "John",
-                "gender": [
-                    "language": "eng",
-                    "value": "Male"
-                ] 
             },
             "renderMethod": {
                     "type": "TemplateRenderMethod",
@@ -52,8 +48,8 @@
                   }
               }
         }"""
-        // Assume SVG Template hosted is "<svg lang="eng">{{/credentialSubject/gender}}##{{/credentialSubject/fullName}}</svg>"
-    Result will be => [<svg lang="eng">Male##John</svg>]
+        // Assume SVG Template hosted is "<svg>{{/credentialSubject/fullName}}</svg>"
+    Result will be => [<svg>John</svg>]
 ```
 - Returns the Replaced svg template to render proper SVG Image. It list of SVG Template if multiple render methods are present in the VC.
 
@@ -82,11 +78,8 @@ io.mosip.injivcrenderer/commonMain
 │   └── QrDataConvertor.kt # Implementation of QR code generation
 │── templateEngine/svg//          
 │   ├── JsonPointerResolver.kt  # Json Pointer Algorithm implementation
-│   └── SvgToPdfConvertor.kt # SVg to Pdf conversion utility   
-│── utils/ - # Helpers and utility classes        
-│   ├── DigestMutlibaseHelper.kt  
-│   ├── PlaceholderRepalcementHelper.kt  
-│   ├── RenderMethodHelper.kt  
+│   └── SvgToPdfConvertor.kt # Svg to Pdf conversion utility   
+│── utils/ - # Helpers and utility classes      
 │   ├── TemplateHelper.kt  
 │   └── XMLHelper.kt    
 ```
@@ -100,7 +93,7 @@ io.mosip.injivcrenderer/commonMain
 5. SvgFetchException is thrown if fetching SVG from the URL fails
 6. InvalidRenderMethodException is thrown if render method object is invalid
 7. MultibaseValidationException is thrown if digestMultibase validation fails
-8. UnsupportedCredentialFormat is thrown if unsupported credential format is passed to the renderVC method
+8. UnsupportedCredentialFormat is thrown if unsupported credential format is passed to the generateCredentialDisplayContent method
 
 
 ### Steps involved in SVG Template to SVG Image Conversion
@@ -201,33 +194,54 @@ For each item in the renderMethodArray, the library validates the `renderSuite` 
 
 ##### Array Fields Handling
 - For array fields in the VC, index based approach will be followed.
-- Example:
-    ```
-    val vcJsonString = """{"credentialSubject" : "benefits": ["Critical Surgery", "Full Health Checkup", "Testing"]}"""
+  - Example:
+      ```
+      val vcJsonString = """
+            {"credentialSubject" : 
+                {
+                    "benefits": ["Critical Surgery", "Full Health Checkup", "Testing"]
+                }
+            }
+            """
     
-    val svgTempalte = "<svg>{{/benefits/0}},{{/benefits/1}}</svg>"
+      val svgTempalte = "<svg>{{/credentialSubject/benefits/0}},{{/credentialSubject/benefits/1}}</svg>"
     
-    //result => <svg>Critical Surgery,Full Health Checkup</svg>
-    ```
-- Example for array of objects:
-    ```
-    val vcJsonString = """{      "credentialSubject": {          "awards": [              {"title": "Award1", "year": "2020"},              {"title": "Award2", "year": "2021"}          ]      }  }"""
+      //result => <svg>Critical Surgery,Full Health Checkup</svg>
+      ```
+    - Example for array of objects:
+        ```
+        val vcJsonString = """{      
+          "credentialSubject": {          
+                  "awards": [              
+                      {"title": "Award1", "year": "2020"},              
+                      {"title": "Award2", "year": "2021"}          
+                  ]      
+              }  
+      }"""
     
-    val svgTemplate = "<svg>{{/credentialSubject/awards/0/title}} - {{/credentialSubject/awards/0/year}}, {{/credentialSubject/awards/1/title}} - {{/credentialSubject/awards/1/year}}</svg>"
+        val svgTemplate = "<svg>{{/credentialSubject/awards/0/title}} - {{/credentialSubject/awards/0/year}}, {{/credentialSubject/awards/1/title}} - {{/credentialSubject/awards/1/year}}</svg>"
     
-    //result => <svg>Award1 - 2020, Award2 - 2021</svg>
-    ```
+        //result => <svg>Award1 - 2020, Award2 - 2021</svg>
+        ```
 
 ##### Locale Handling
 - For locale handling, same JSON Pointer Algorithm is used to extract the value from the VC.
-- Example:
+  - Example:
+      ```
+      val vcJsonString = """
+        {      
+            "credentialSubject": {
+                "city": [
+                    {"value": "TestCITY", "language": "eng"},
+                    {"value": "VilleTest", "language": "fr"}
+                ]
+        }   
+        """
+          
+        val svgTempalte = "<svg>{{/credentialSubject/city/0/value}}</svg>"
+          
+        //result => <svg>TestCITY</svg>
     ```
-    val vcJsonString = """{      "credentialSubject": { "fullName": "Tester", "city": [{"value": "TestCITY", "language": "eng"},{"value": "VilleTest", "language": "fr"}]}"""
-          
-      val svgTempalte = "<svg>{{/credentialSubject/fullName}} - {{/credentialSubject/city/0/value}}</svg>"
-          
-      //result => <svg>Tester - TestCITY</svg>
-  ```
 
 #### Replacing Placeholders in SVG Template
 - Replaces the placeholders in the SVG Template with actual VC Json Data strictly follows JSON Pointer Algorithm RFC6901.

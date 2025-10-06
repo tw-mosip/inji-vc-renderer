@@ -1,4 +1,4 @@
-package io.mosip.injivcrenderer.utils
+package utils
 
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -6,11 +6,11 @@ import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import io.mosip.injivcrenderer.TestUtils
 import io.mosip.injivcrenderer.exceptions.VcRendererExceptions
+import io.mosip.injivcrenderer.utils.TemplateHelper
 
-class DigestMultibaseHelperTest {
-
+class TemplateHelperJvmTest {
     private val traceId = "test-trace-id"
-    private val helper = DigestMultibaseHelper(traceId)
+    private val helper = TemplateHelper(traceId)
     private val svgSample = """<svg>Email: {{/credentialSubject/email}}, Mobile: {{/credentialSubject/mobile}}</svg>"""
 
     @Test
