@@ -133,8 +133,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         Button(onClick = {
             scope.launch {
                 try {
+                    println("Rendering SVG...")
                     val renderedSvgList = withContext(Dispatchers.IO) {
-                        InjiVcRenderer("sample-app-trace-id").renderVC(
+                        InjiVcRenderer("sample-app-trace-id").generateCredentialDisplayContent(
                             credentialFormat = CredentialFormat.LDP_VC,
                             vcJsonString = farmerVc)
                     }

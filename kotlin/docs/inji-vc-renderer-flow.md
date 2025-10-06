@@ -48,9 +48,9 @@ sequenceDiagram
 The User taps on the Mini Card View in the Wallet to see the detailed view of a Verifiable Credential (VC).
 
 ##### 2. Call renderMethod API
-The Wallet calls the InjiVcRenderer library’s renderVC(credentialFormat, wellknownJsonString, vcJsonString) API with the required inputs.
+The Wallet calls the InjiVcRenderer library’s generateCredentialDisplayContent(credentialFormat, wellknownJsonString, vcJsonString) API with the required inputs.
 ````
-InjiVcRenderer.renderVC(
+InjiVcRenderer.generateCredentialDisplayContent(
     credentialFormat, 
     wellknownJsonString, 
     vcJsonString

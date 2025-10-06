@@ -24,13 +24,7 @@ class NetworkManager(
 
                 val contentType = ContentType.fromType(response.header("Content-Type"), traceabilityId, this::class.simpleName)
                 val body = response.body?.string()
-                    ?: throw VcRendererExceptions.SvgFetchException(
-                        traceabilityId,
-                        this::class.simpleName,
-                        "Empty response body"
-                    )
-
-                TemplateResponse(contentType, body)
+                TemplateResponse(contentType, body.orEmpty())
             }
         } catch (e: VcRendererExceptions.SvgFetchException) {
             throw e

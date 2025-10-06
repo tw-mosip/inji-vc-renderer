@@ -1,11 +1,10 @@
 package io.mosip.injivcrenderer.constants
 
 enum class CredentialFormat(val value: String) {
-    LDP_VC("ldp_vc"),
-    UNKNOWN("unknown");
+    LDP_VC("ldp_vc");
 
     companion object {
-        fun fromValue(value: String): CredentialFormat =
-            entries.find { it.value == value } ?: UNKNOWN
+        fun fromValue(value: String): CredentialFormat? =
+            entries.find { it.value == value }
     }
 }
