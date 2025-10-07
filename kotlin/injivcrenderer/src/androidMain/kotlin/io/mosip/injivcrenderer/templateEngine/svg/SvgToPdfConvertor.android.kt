@@ -4,8 +4,8 @@ package io.mosip.injivcrenderer.templateEngine.svg
 import android.graphics.Canvas
 import android.graphics.Picture
 import android.graphics.pdf.PdfDocument
-import android.util.Base64
 import com.caverock.androidsvg.SVG
+import io.mosip.injivcrenderer.common.encodeToBase64
 import java.io.ByteArrayOutputStream
 
 actual fun svgListToPdfBase64(svgList: List<String>): String {
@@ -29,5 +29,5 @@ actual fun svgListToPdfBase64(svgList: List<String>): String {
     pdfDocument.writeTo(outputStream)
     pdfDocument.close()
 
-    return Base64.encodeToString(outputStream.toByteArray(), Base64.NO_WRAP)
+    return encodeToBase64(outputStream.toByteArray())
 }

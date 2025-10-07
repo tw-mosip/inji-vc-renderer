@@ -9,7 +9,7 @@ public class Main {
     public static void main(String[] args) {
 
         InjiVcRenderer injiVcRenderer = new InjiVcRenderer("sample-java-app");
-        List<Object> svgImage = injiVcRenderer.renderVC(CredentialFormat.LDP_VC, null, farmerVc);
+        List<Object> svgImage = injiVcRenderer.generateCredentialDisplayContent(CredentialFormat.LDP_VC, null, farmerVc);
         System.out.println(":::::Replaced Template-->"+svgImage);
 
         List<String> svgStrings = svgImage.stream()
